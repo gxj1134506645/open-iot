@@ -2,11 +2,10 @@
 =============================================================================
 SYNC IMPACT REPORT
 =============================================================================
-Version change: 1.1.0 → 1.2.0 (MINOR - 新增学习范围强制原则)
-Modified principles:
-  - III. 单体模块化优先原则 → III. 渐进式微服务实践原则
+Version change: 1.2.0 → 1.2.1 (PATCH - 技术栈规范扩展)
+Modified principles: None
 Added sections:
-  - VI. 学习范围强制原则
+  - 前端技术栈规范
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ (no changes needed - generic)
@@ -88,7 +87,7 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 
 ## Technical Standards
 
-### 技术栈规范
+### 后端技术栈
 
 | 层级 | 技术选型 | 说明 |
 |------|---------|------|
@@ -103,6 +102,15 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 | 认证 | Sa-Token | 轻量级权限认证 |
 | 通信 | Netty | MQTT/TCP 设备接入 |
 | ORM | MyBatis Plus | 数据访问层 |
+
+### 前端技术栈
+
+| 层级 | 技术选型 | 说明 |
+|------|---------|------|
+| 框架 | Vue 3 | 渐进式 JavaScript 框架 |
+| 构建工具 | Vite | 下一代前端构建工具 |
+| UI 组件库 | Element Plus | Vue 3 企业级 UI 组件库 |
+| 状态管理 | Pinia | Vue 3 官方推荐状态管理库 |
 
 ### 代码规范
 
@@ -167,4 +175,4 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 - 代码审查需要检查是否符合宪法原则
 - 复杂度增加必须有合理的理由和文档
 
-**Version**: 1.2.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-25
+**Version**: 1.2.1 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-25
