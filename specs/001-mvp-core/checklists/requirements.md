@@ -2,7 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-02-25
-**Feature**: [spec.md](./spec.md)
+**Feature**: [spec.md](../spec.md)
 
 ## Content Quality
 
@@ -29,30 +29,19 @@
 - [x] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
+## Notes
+
+- 规格文档已完成，包含 6 个用户故事、26 个功能需求、9 个非功能需求
+- 8 个核心验收场景已用 Gherkin 格式定义
+- 5 个待确认项已列出，需在实现前明确
+- 文档符合 constitution 定义的 MVP 范围原则
+
 ## Validation Summary
 
 | Category | Status | Notes |
 |----------|--------|-------|
-| Content Quality | PASS | 无实现细节，聚焦用户价值 |
+| Content Quality | PASS | 无实现细节，聚焦业务价值 |
 | Requirement Completeness | PASS | 需求可测试、可验收 |
-| Feature Readiness | PASS | 覆盖所有主要用户场景 |
+| Feature Readiness | PASS | 可进入下一阶段 `/speckit.plan` |
 
-## Outstanding Items
-
-### 待确认项（风险项）
-
-以下 5 项需要在实现阶段开始前明确：
-
-| 序号 | 待确认项 | 建议选项 | 优先级 |
-|------|---------|---------|--------|
-| 1 | MQTT Broker 选型与部署方式 | EMQX / Mosquitto | 高 |
-| 2 | 实时处理方案选型 | Kafka Streams / 简化消费者 / Flink | 高 |
-| 3 | 轨迹数据存储策略 | Redis / TimescaleDB / PostgreSQL 扩展 | 中 |
-| 4 | 设备鉴权策略 | 密钥 / 证书 / Token | 高 |
-| 5 | 历史重放的成本与窗口策略 | 按时间窗口 / 按数据量 / 手动触发 | 低 |
-
-## Notes
-
-- 规格文档已完成，可进入 `/speckit.plan` 阶段
-- 待确认项可在计划阶段或实现阶段逐步明确
-- 规格文档遵循 constitution 中定义的 6 个核心原则
+**Next Step**: 规格文档已就绪，可执行 `/speckit.clarify` 澄清待确认项，或直接执行 `/speckit.plan` 进入规划阶段。
