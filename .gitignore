@@ -38,3 +38,40 @@ pnpm-debug.log*
 tmp/
 temp/
 *.tmp
+*.swp
+*.swo
+*~
+
+# Compiled files
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Package files
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# Kotlin
+*.kotlin_module
+
+# Spring Boot
+application-local.yml
+application-local.properties
+
+# Database
+*.db
+*.sqlite
+
+# Docker
+*.pid
+
+# Test output
+test-output/
+testng-results.xml
+
+# MCP
+.claude/settings.local.json

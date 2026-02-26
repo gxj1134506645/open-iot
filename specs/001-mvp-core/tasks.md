@@ -27,17 +27,17 @@
 
 ### 1.1 项目骨架
 
-- [ ] T001 创建项目根目录结构 (docs/, backend/, frontend/, infrastructure/, scripts/)
-- [ ] T002 创建后端父 POM 文件 backend/pom.xml (Spring Boot 3.x, Spring Cloud Alibaba 依赖管理)
-- [ ] T003 [P] 创建前端项目 frontend/package.json (Vue 3, Vite, Element Plus, Pinia)
-- [ ] T004 [P] 创建 .gitignore 文件 (Java, Node, IDE, 构建产物)
+- [x] T001 创建项目根目录结构 (docs/, backend/, frontend/, infrastructure/, scripts/)
+- [x] T002 创建后端父 POM 文件 backend/pom.xml (Spring Boot 3.x, Spring Cloud Alibaba 依赖管理)
+- [x] T003 [P] 创建前端项目 frontend/package.json (Vue 3, Vite, Element Plus, Pinia)
+- [x] T004 [P] 创建 .gitignore 文件 (Java, Node, IDE, 构建产物)
 
 ### 1.2 基础设施配置
 
-- [ ] T005 创建 Docker Compose 开发环境配置 infrastructure/docker/docker-compose.yml (Nacos, PostgreSQL, Redis, MongoDB, Kafka, EMQX)
-- [ ] T006 [P] 创建 EMQX 配置文件 infrastructure/emqx/emqx.conf
-- [ ] T007 [P] 创建 Kafka 配置文件 infrastructure/kafka/server.properties
-- [ ] T008 创建数据库迁移目录 infrastructure/sql/migrations/
+- [x] T005 创建 Docker Compose 开发环境配置 infrastructure/docker/docker-compose.yml (Nacos, PostgreSQL, Redis, MongoDB, Kafka, EMQX)
+- [x] T006 [P] 创建 EMQX 配置文件 infrastructure/emqx/emqx.conf
+- [x] T007 [P] 创建 Kafka 配置文件 infrastructure/kafka/server.properties
+- [x] T008 创建数据库迁移目录 infrastructure/sql/migrations/
 
 ---
 
