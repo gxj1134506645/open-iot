@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: connect-service
+  config:
+    import: optional:nacos:
   cloud:
     nacos:
       discovery:
@@ -13,6 +15,7 @@ spring:
         server-addr: 127.0.0.1:8848
         file-extension: yaml
         namespace: public
+        enabled: false
   data:
     redis:
       host: 127.0.0.1
