@@ -2,10 +2,11 @@
 =============================================================================
 SYNC IMPACT REPORT
 =============================================================================
-Version change: 1.2.2 → 1.2.3 (PATCH - 透明类型禁止规则补充)
-Modified principles: None
+Version change: 1.2.3 → 1.3.0 (MINOR - 新增认证边界原则并强化注释规范)
+Modified principles:
+  - 代码规范（注释要求增强为 MUST 级）
 Added sections:
-  - 透明类型禁止规则（在"后端接口与对象映射规范"中）
+  - VII. 认证边界与职责划分原则 (Authentication Boundary & Responsibility)
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ (no changes needed - generic)
@@ -85,6 +86,17 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 
 **理由**: 该项目目标是系统化学习 IoT 后端核心能力，上述四项是最小闭环能力集合，缺一不可。
 
+### VII. 认证边界与职责划分原则 (Authentication Boundary & Responsibility)
+
+用户认证与会话治理 MUST 按职责边界统一实施，禁止隐式信任与重复认证。
+
+- **网关统一认证**: 所有用户侧 HTTP 请求 MUST 在 Gateway 完成 Token 校验与未授权拦截
+- **身份服务签发**: 登录、登出、会话签发与会话失效 MUST 由 `tenant-service` 统一负责
+- **下游禁止公网信任**: 下游服务 MUST NOT 信任公网直连请求中的 `X-Tenant-Id`、`X-User-Id`、`X-User-Role` 等身份 Header
+- **受控入口信任**: 下游服务仅可在内网或受控入口条件下信任 Gateway 注入的身份上下文
+
+**理由**: 清晰认证边界可避免认证逻辑分散、身份伪造与跨租户越权，提升系统安全性与可维护性。
+
 ## Technical Standards
 
 ### 后端技术栈
@@ -127,7 +139,7 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 ### 代码规范
 
 - 编码格式：统一使用 UTF-8
-- 注释语言：中文注释，便于团队理解
+- 注释要求：代码注释 MUST 使用中文简体；关键类、关键方法、复杂业务分支、边界条件与异常处理 MUST 提供详细注释
 - 命名规范：遵循阿里巴巴 Java 开发手册
 - 异常处理：统一使用 ApiResponse 封装返回，错误信息由前端处理
 
@@ -187,4 +199,4 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 - 代码审查需要检查是否符合宪法原则
 - 复杂度增加必须有合理的理由和文档
 
-**Version**: 1.2.3 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-27
+**Version**: 1.3.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-27
