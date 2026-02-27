@@ -5,7 +5,7 @@ spring:
   application:
     name: tenant-service
   config:
-    import: optional:nacos:
+    import: "optional:nacos:"
   cloud:
     nacos:
       discovery:
@@ -28,7 +28,6 @@ spring:
       password: openiot123
       database: 0
 
-# MyBatis Plus 配置
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
@@ -40,7 +39,6 @@ mybatis-plus:
       logic-delete-value: '1'
       logic-not-delete-value: '0'
 
-# Sa-Token 配置
 sa-token:
   token-name: Authorization
   timeout: 86400
@@ -50,12 +48,10 @@ sa-token:
   token-style: uuid
   is-log: false
 
-# Flyway 配置
 spring.flyway:
   enabled: false
   locations: classpath:db/migration
 
-# Actuator 配置
 management:
   endpoints:
     web:
@@ -65,7 +61,6 @@ management:
     health:
       show-details: always
 
-# 日志配置
 logging:
   level:
     com.openiot: debug

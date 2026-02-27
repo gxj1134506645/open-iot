@@ -5,7 +5,7 @@ spring:
   application:
     name: data-service
   config:
-    import: optional:nacos:
+    import: "optional:nacos:"
   cloud:
     nacos:
       discovery:
@@ -36,13 +36,11 @@ spring:
       auto-offset-reset: earliest
       enable-auto-commit: false
 
-# MyBatis Plus 配置
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
 
-# Actuator 配置
 management:
   endpoints:
     web:
@@ -52,7 +50,6 @@ management:
     health:
       show-details: always
 
-# 日志配置
 logging:
   level:
     com.openiot: debug

@@ -5,7 +5,7 @@ spring:
   application:
     name: device-service
   config:
-    import: optional:nacos:
+    import: "optional:nacos:"
   cloud:
     nacos:
       discovery:
@@ -36,7 +36,6 @@ spring:
       group-id: device-service
       auto-offset-reset: earliest
 
-# MyBatis Plus 配置
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
@@ -48,7 +47,6 @@ mybatis-plus:
       logic-delete-value: '1'
       logic-not-delete-value: '0'
 
-# Actuator 配置
 management:
   endpoints:
     web:
@@ -58,7 +56,6 @@ management:
     health:
       show-details: always
 
-# 日志配置
 logging:
   level:
     com.openiot: debug
