@@ -1,18 +1,15 @@
 package com.openiot.gateway.filter;
 
-import cn.dev33.satoken.reactor.filter.SaReactorFilter;
-import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -22,12 +19,25 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 认证全局过滤器
- * 校验 Token 并注入租户信息
+ *
+ * <p>职责：
+ * <ul>
+ *   <li>验证 Token 有效性</li>
+ *   <li>解析用户信息（tenantId, userId, role）</li>
+ *   <li>注入身份 Header 传递给下游服务</li>
+ * </ul>
+ *
+ * <p>放行路径：
+ * <ul>
+ *   <li>/api/v1/auth/login - 登录接口</li>
+ *   <li>/api/v1/auth/register - 注册接口</li>
+ *   <li>/actuator/** - 健康检查</li>
+ * </ul>
+ *
+ * @see constitution.md VII. 认证边界与职责划分原则
  */
 @Slf4j
 @Component
@@ -70,6 +80,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
                     .header("X-User-Role", role != null ? role : "")
                     .build();
 
+            log.debug("认证成功: path={}, tenantId={}, userId={}", path, tenantId, userId);
             return chain.filter(exchange.mutate().request(newRequest).build());
 
         } catch (Exception e) {
@@ -79,31 +90,37 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 判断是否为排除路径
+     * 判断是否为排除路径（不需要认证）
+     *
+     * @param path 请求路径
+     * @return true 表示放行，false 表示需要认证
      */
     private boolean isExcludedPath(String path) {
-        return path.startsWith("/auth/login") ||
-               path.startsWith("/auth/register") ||
+        return path.startsWith("/api/v1/auth/login") ||
+               path.startsWith("/api/v1/auth/register") ||
                path.startsWith("/actuator/") ||
                path.startsWith("/error");
     }
 
     /**
      * 返回未授权响应
+     *
+     * @param exchange ServerWebExchange
+     * @param message 错误消息
+     * @return Mono<Void>
      */
     private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.OK);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 401);
-        result.put("msg", message);
-        result.put("data", null);
-        result.put("timestamp", System.currentTimeMillis());
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setCode(401);
+        errorResponse.setMsg(message);
+        errorResponse.setTimestamp(System.currentTimeMillis());
 
         try {
-            String body = objectMapper.writeValueAsString(result);
+            String body = objectMapper.writeValueAsString(errorResponse);
             DataBuffer buffer = response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
             return response.writeWith(Mono.just(buffer));
         } catch (JsonProcessingException e) {
@@ -114,5 +131,15 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public int getOrder() {
         return -100;
+    }
+
+    /**
+     * 错误响应 VO
+     */
+    @Data
+    public static class ErrorResponse {
+        private Integer code;
+        private String msg;
+        private Long timestamp;
     }
 }

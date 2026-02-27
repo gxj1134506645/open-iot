@@ -22,16 +22,16 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        - id: device-service
-          uri: lb://device-service
-          predicates:
-            - Path=/api/v1/devices/**,/api/v1/auth/**
-          filters:
-            - StripPrefix=0
         - id: tenant-service
           uri: lb://tenant-service
           predicates:
-            - Path=/api/v1/tenants/**,/api/v1/users/**
+            - Path=/api/v1/tenants/**,/api/v1/users/**,/api/v1/auth/**
+          filters:
+            - StripPrefix=0
+        - id: device-service
+          uri: lb://device-service
+          predicates:
+            - Path=/api/v1/devices/**
           filters:
             - StripPrefix=0
         - id: data-service
