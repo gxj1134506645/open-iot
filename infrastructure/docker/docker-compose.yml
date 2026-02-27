@@ -100,9 +100,12 @@ services:
       - open-iot-network
 
   # ==================== EMQX (MQTT Broker) ====================
+  # Windows 兼容：不挂载 volumes，使用容器内部存储
   emqx:
     image: emqx/emqx:5.4.1
     container_name: open-iot-emqx
+    privileged: true
+    user: root
     environment:
       - EMQX_NAME=open-iot-emqx
       - EMQX_HOST=0.0.0.0
@@ -114,7 +117,6 @@ services:
       - "8084:8084"    # WSS
       - "8883:8883"    # MQTTS
       - "18083:18083"  # Dashboard
-    # Windows 兼容：使用 named volume 而非 bind mount
     restart: unless-stopped
     networks:
       - open-iot-network
