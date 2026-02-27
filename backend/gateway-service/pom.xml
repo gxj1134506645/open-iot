@@ -43,16 +43,28 @@
             <artifactId>sa-token-redis-jackson</artifactId>
         </dependency>
 
-        <!-- Common Redis -->
+        <!-- Common Redis (排除 web) -->
         <dependency>
             <groupId>com.openiot</groupId>
             <artifactId>common-redis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-        <!-- Common Core -->
+        <!-- Common Core (排除 web) -->
         <dependency>
             <groupId>com.openiot</groupId>
             <artifactId>common-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Spring Boot Actuator -->
