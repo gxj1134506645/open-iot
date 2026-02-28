@@ -2,11 +2,11 @@
 =============================================================================
 SYNC IMPACT REPORT
 =============================================================================
-Version change: 1.2.3 → 1.3.0 (MINOR - 新增认证边界原则并强化注释规范)
+Version change: 1.3.0 → 1.4.0 (MINOR - 新增前端UI/UX设计原则)
 Modified principles:
-  - 代码规范（注释要求增强为 MUST 级）
+  - None
 Added sections:
-  - VII. 认证边界与职责划分原则 (Authentication Boundary & Responsibility)
+  - 前端 UI/UX 设计原则 (Frontend UI/UX Design Principles)
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ (no changes needed - generic)
@@ -124,6 +124,21 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 | UI 组件库 | Element Plus | Vue 3 企业级 UI 组件库 |
 | 状态管理 | Pinia | Vue 3 官方推荐状态管理库 |
 
+### 前端 UI/UX 设计原则
+
+前端界面开发 MUST 遵循以下设计规范和质量标准：
+
+- **设计工具**: 使用 UI/UX Pro Max skill 进行前端界面设计和代码生成，确保设计质量
+- **组件库**: 统一使用 Element Plus 组件库，保持视觉一致性
+- **响应式设计**: 所有界面必须支持响应式布局，适配不同屏幕尺寸
+- **设计风格**: 遵循现代简洁风格，推荐使用 glassmorphism（毛玻璃）、minimalism（极简）或 bento grid（便当盒布局）
+- **色彩系统**: 使用统一的色彩调色板，确保品牌一致性和可访问性
+- **字体配对**: 使用推荐的字体配对方案，提升阅读体验
+- **交互反馈**: 所有用户操作必须提供清晰的视觉反馈（加载状态、成功/错误提示）
+- **可访问性**: 遵循 WCAG 标准，确保色盲用户、键盘用户等群体的可访问性
+
+**理由**: 统一的 UI/UX 规范可以提升用户体验、减少设计决策成本、提高开发效率，并确保产品视觉一致性。
+
 ### 后端接口与对象映射规范
 
 - 对象映射：Entity 与 VO/DTO 之间的转换 MUST 使用 `MapStruct`，禁止在业务代码中手写大段属性拷贝逻辑
@@ -199,4 +214,4 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 - 代码审查需要检查是否符合宪法原则
 - 复杂度增加必须有合理的理由和文档
 
-**Version**: 1.3.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-27
+**Version**: 1.4.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-02-28
