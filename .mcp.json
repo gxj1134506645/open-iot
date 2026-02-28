@@ -7,7 +7,7 @@
         "npx",
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://%PG_USER%:%PG_PASSWORD%@%PG_HOST%:%PG_PORT%/%PG_DATABASE%"
+        "postgresql://openiot:openiot123@localhost:5432/openiot"
       ]
     }
   }

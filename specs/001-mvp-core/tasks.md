@@ -155,35 +155,35 @@
 
 #### 设备服务
 
-- [ ] T055 [US1] 创建 device-service 模块 backend/device-service/pom.xml
-- [ ] T056 [US1] 创建设备服务启动类 backend/device-service/src/main/java/com/openiot/device/DeviceApplication.java
-- [ ] T057 [US1] 创建设备服务配置 backend/device-service/src/main/resources/application.yml
-- [ ] T058 [P] [US1] 创建 Device 实体类 backend/device-service/src/main/java/com/openiot/device/entity/Device.java
-- [ ] T059 [P] [US1] 创建 DeviceTrajectory 实体类 backend/device-service/src/main/java/com/openiot/device/entity/DeviceTrajectory.java
-- [ ] T060 [US1] 创建 DeviceMapper backend/device-service/src/main/java/com/openiot/device/mapper/DeviceMapper.java
-- [ ] T061 [US1] 创建 DeviceTrajectoryMapper backend/device-service/src/main/java/com/openiot/device/mapper/DeviceTrajectoryMapper.java
-- [ ] T062 [US1] 创建 DeviceService backend/device-service/src/main/java/com/openiot/device/service/DeviceService.java
-- [ ] T063 [US1] 创建 DeviceTokenService backend/device-service/src/main/java/com/openiot/device/service/DeviceTokenService.java
-- [ ] T064 [US1] 创建 DeviceController backend/device-service/src/main/java/com/openiot/device/controller/DeviceController.java
-- [ ] T065 [US1] 创建 DeviceDataController（HTTP 上报） backend/device-service/src/main/java/com/openiot/device/controller/DeviceDataController.java
+- [x] T055 [US1] 创建 device-service 模块 backend/device-service/pom.xml
+- [x] T056 [US1] 创建设备服务启动类 backend/device-service/src/main/java/com/openiot/device/DeviceApplication.java
+- [x] T057 [US1] 创建设备服务配置 backend/device-service/src/main/resources/application.yml
+- [x] T058 [P] [US1] 创建 Device 实体类 backend/device-service/src/main/java/com/openiot/device/entity/Device.java
+- [x] T059 [P] [US1] 创建 DeviceTrajectory 实体类 backend/device-service/src/main/java/com/openiot/device/entity/DeviceTrajectory.java
+- [x] T060 [US1] 创建 DeviceMapper backend/device-service/src/main/java/com/openiot/device/mapper/DeviceMapper.java
+- [x] T061 [US1] 创建 DeviceTrajectoryMapper backend/device-service/src/main/java/com/openiot/device/mapper/DeviceTrajectoryMapper.java
+- [x] T062 [US1] 创建 DeviceService backend/device-service/src/main/java/com/openiot/device/service/DeviceService.java
+- [x] T063 [US1] 创建 DeviceTokenService backend/device-service/src/main/java/com/openiot/device/service/DeviceTokenService.java
+- [x] T064 [US1] 创建 DeviceController backend/device-service/src/main/java/com/openiot/device/controller/DeviceController.java
+- [x] T065 [US1] 创建 DeviceDataController（HTTP 上报） backend/device-service/src/main/java/com/openiot/device/controller/DeviceDataController.java
 
 #### MQTT 接入（EMQX Rule Engine）
 
-- [ ] T066 [US1] 配置 EMQX Rule Engine 转发到 Kafka infrastructure/emqx/rules/kafka_rule.sql
-- [ ] T067 [US1] 创建 MQTT 设备认证 Webhook backend/device-service/src/main/java/com/openiot/device/controller/MqttAuthController.java
+- [x] T066 [US1] 配置 EMQX Rule Engine 转发到 Kafka infrastructure/emqx/rules/kafka_rule.sql
+- [x] T067 [US1] 创建 MQTT 设备认证 Webhook backend/device-service/src/main/java/com/openiot/device/controller/MqttAuthController.java
 
 #### TCP 接入（Netty）
 
-- [ ] T068 [US1] 创建 connect-service 模块 backend/connect-service/pom.xml
-- [ ] T069 [US1] 创建接入服务启动类 backend/connect-service/src/main/java/com/openiot/connect/ConnectApplication.java
-- [ ] T070 [US1] 创建接入服务配置 backend/connect-service/src/main/resources/application.yml
-- [ ] T071 [US1] 创建 Netty Server backend/connect-service/src/main/java/com/openiot/connect/netty/NettyServer.java
-- [ ] T072 [US1] 创建 Netty Server 配置 backend/connect-service/src/main/java/com/openiot/connect/netty/NettyServerConfig.java
-- [ ] T073 [US1] 创建 TCP 消息处理器 backend/connect-service/src/main/java/com/openiot/connect/netty/TcpMessageHandler.java
-- [ ] T074 [US1] 创建协议适配器接口 backend/connect-service/src/main/java/com/openiot/connect/protocol/ProtocolAdapter.java
-- [ ] T075 [US1] 创建私有协议解析器 backend/connect-service/src/main/java/com/openiot/connect/protocol/PrivateProtocolParser.java
-- [ ] T076 [US1] 创建设备认证服务 backend/connect-service/src/main/java/com/openiot/connect/auth/DeviceAuthService.java
-- [ ] T077 [US1] 创建 Kafka 消息生产者 backend/connect-service/src/main/java/com/openiot/connect/producer/EventProducer.java
+- [x] T068 [US1] 创建 connect-service 模块 backend/connect-service/pom.xml
+- [x] T069 [US1] 创建接入服务启动类 backend/connect-service/src/main/java/com/openiot/connect/ConnectApplication.java
+- [x] T070 [US1] 创建接入服务配置 backend/connect-service/src/main/resources/application.yml
+- [x] T071 [US1] 创建 Netty Server backend/connect-service/src/main/java/com/openiot/connect/netty/NettyServer.java
+- [x] T072 [US1] 创建 Netty Server 配置 backend/connect-service/src/main/java/com/openiot/connect/netty/NettyServerConfig.java
+- [x] T073 [US1] 创建 TCP 消息处理器 backend/connect-service/src/main/java/com/openiot/connect/netty/TcpMessageHandler.java
+- [x] T074 [US1] 创建协议适配器接口 backend/connect-service/src/main/java/com/openiot/connect/protocol/ProtocolAdapter.java
+- [x] T075 [US1] 创建私有协议解析器 backend/connect-service/src/main/java/com/openiot/connect/protocol/PrivateProtocolParser.java
+- [x] T076 [US1] 创建设备认证服务 backend/connect-service/src/main/java/com/openiot/connect/auth/DeviceAuthService.java
+- [x] T077 [US1] 创建 Kafka 消息生产者 backend/connect-service/src/main/java/com/openiot/connect/producer/EventProducer.java
 
 ---
 
@@ -197,31 +197,31 @@
 
 #### 数据服务（实时消费者）
 
-- [ ] T078 [US2] 创建 data-service 模块 backend/data-service/pom.xml
-- [ ] T079 [US2] 创建数据服务启动类 backend/data-service/src/main/java/com/openiot/data/DataApplication.java
-- [ ] T080 [US2] 创建数据服务配置 backend/data-service/src/main/resources/application.yml
-- [ ] T081 [US2] 创建实时消费者 backend/data-service/src/main/java/com/openiot/data/consumer/RealtimeConsumer.java
-- [ ] T082 [US2] 创建轨迹服务 backend/data-service/src/main/java/com/openiot/data/service/TrajectoryService.java
-- [ ] T083 [US2] 创建设备状态服务 backend/data-service/src/main/java/com/openiot/data/service/DeviceStatusService.java
-- [ ] T084 [US2] 创建 SSE 控制器 backend/data-service/src/main/java/com/openiot/data/controller/SseController.java
+- [x] T078 [US2] 创建 data-service 模块 backend/data-service/pom.xml
+- [x] T079 [US2] 创建数据服务启动类 backend/data-service/src/main/java/com/openiot/data/DataApplication.java
+- [x] T080 [US2] 创建数据服务配置 backend/data-service/src/main/resources/application.yml
+- [x] T081 [US2] 创建实时消费者 backend/data-service/src/main/java/com/openiot/data/consumer/RealtimeConsumer.java
+- [x] T082 [US2] 创建轨迹服务 backend/data-service/src/main/java/com/openiot/data/service/TrajectoryService.java
+- [x] T083 [US2] 创建设备状态服务 backend/data-service/src/main/java/com/openiot/data/service/DeviceStatusService.java
+- [x] T084 [US2] 创建 SSE 控制器 backend/data-service/src/main/java/com/openiot/data/controller/SseController.java
 
 #### 设备服务（状态查询 API）
 
-- [ ] T085 [US2] 创建设备状态查询接口 backend/device-service/src/main/java/com/openiot/device/controller/DeviceStatusController.java
-- [ ] T086 [US2] 创建轨迹查询接口 backend/device-service/src/main/java/com/openiot/device/controller/TrajectoryController.java
+- [x] T085 [US2] 创建设备状态查询接口 backend/device-service/src/main/java/com/openiot/device/controller/DeviceStatusController.java
+- [x] T086 [US2] 创建轨迹查询接口 backend/device-service/src/main/java/com/openiot/device/controller/TrajectoryController.java
 
 #### 前端实时监控页面
 
-- [ ] T087 [US2] 创建前端项目配置 frontend/vite.config.ts
-- [ ] T088 [US2] 创建前端入口文件 frontend/src/main.ts
-- [ ] T089 [P] [US2] 创建 API 请求工具 frontend/src/utils/request.ts
-- [ ] T090 [P] [US2] 创建 SSE 工具 frontend/src/utils/sse.ts
-- [ ] T091 [US2] 创建 Pinia Store frontend/src/stores/device.ts
-- [ ] T092 [US2] 创建路由配置 frontend/src/router/index.ts
-- [ ] T093 [US2] 创建布局组件 frontend/src/layouts/MainLayout.vue
-- [ ] T094 [US2] 创建设备监控页面 frontend/src/views/monitor/DeviceMonitor.vue
-- [ ] T095 [US2] 创建轨迹展示组件 frontend/src/components/TrajectoryMap.vue
-- [ ] T096 [US2] 创建设备状态组件 frontend/src/components/DeviceStatus.vue
+- [x] T087 [US2] 创建前端项目配置 frontend/vite.config.ts
+- [x] T088 [US2] 创建前端入口文件 frontend/src/main.ts
+- [x] T089 [P] [US2] 创建 API 请求工具 frontend/src/utils/request.ts
+- [x] T090 [P] [US2] 创建 SSE 工具 frontend/src/utils/sse.ts
+- [x] T091 [US2] 创建 Pinia Store frontend/src/stores/device.ts
+- [x] T092 [US2] 创建路由配置 frontend/src/router/index.ts
+- [x] T093 [US2] 创建布局组件 frontend/src/layouts/MainLayout.vue
+- [x] T094 [US2] 创建设备监控页面 frontend/src/views/monitor/DeviceMonitor.vue
+- [x] T095 [US2] 创建轨迹展示组件 frontend/src/components/TrajectoryMap.vue
+- [x] T096 [US2] 创建设备状态组件 frontend/src/components/DeviceStatus.vue
 
 ---
 
