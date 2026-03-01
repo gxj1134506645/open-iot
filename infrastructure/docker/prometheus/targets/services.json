@@ -1,0 +1,36 @@
+[
+  {
+    "targets": [
+      {
+        "labels": {
+          "service": "gateway-service"
+        },
+        "targets": ["http://gateway-service:8080/actuator/prometheus"]
+      },
+      {
+        "labels": {
+          "service": "tenant-service"
+        },
+        "targets": ["http://tenant-service:8086/actuator/prometheus"]
+      },
+      {
+        "labels": {
+          "service": "device-service"
+        },
+        "targets": ["http://device-service:8081/actuator/prometheus"]
+      },
+      {
+        "labels": {
+          "service": "data-service"
+        },
+        "targets": ["http://data-service:8085/actuator/prometheus"]
+      },
+      {
+        "labels": {
+          "service": "connect-service"
+        },
+        "targets": ["http://connect-service:8082/actuator/prometheus"]
+      }
+    ]
+  }
+]

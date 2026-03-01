@@ -2,16 +2,16 @@
 =============================================================================
 SYNC IMPACT REPORT
 =============================================================================
-Version change: 1.4.0 → 1.5.0 (MINOR - 新增 RBAC 权限模型原则)
+Version change: 1.5.0 → 1.6.0 (MINOR - 新增可观测性强制原则)
 Modified principles:
   - None
 Added sections:
-  - VIII. 严格 RBAC 权限模型原则 (Strict RBAC Permission Model)
+  - IX. 可观测性强制原则 (Observability Enforcement)
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ (no changes needed - generic)
-  - .specify/templates/spec-template.md ✅ (no changes needed - generic)
-  - .specify/templates/tasks-template.md ✅ (no changes needed - generic)
+  - .specify/templates/spec-template.md ⚠ (建议添加可观测性需求检查项)
+  - .specify/templates/tasks-template.md ⚠ (建议添加可观测性任务类型)
 Follow-up TODOs: None
 =============================================================================
 -->
@@ -150,6 +150,91 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 
 **理由**: 严格 RBAC 模型提供灵活的权限配置能力，支持企业级多角色场景，权限变更无需发版，满足 SaaS 平台权限管理需求。
 
+### IX. 可观测性强制原则 (Observability Enforcement)
+
+系统 MUST 默认接入完整的可观测性三支柱（Metrics/Logs/Traces），生产环境必须具备监控告警能力。
+
+#### 三支柱要求
+
+| 支柱 | 技术选型 | 说明 |
+|------|----------|------|
+| **Metrics** | Micrometer + Prometheus | 指标收集与暴露 |
+| **Logs** | SLF4J + Logback + ELK/LoKi | 结构化日志采集 |
+| **Traces** | Micrometer Tracing + Zipkin/Jaeger | 分布式链路追踪 |
+
+#### Metrics 指标规范
+
+- **业务指标 MUST 暴露**：
+  - 设备连接数（在线/离线）
+  - 消息吞吐量（接收/处理/失败）
+  - 处理延迟（P50/P95/P99）
+  - 错误率（按类型分类）
+- **系统指标 SHOULD 暴露**：
+  - JVM 内存、GC、线程
+  - 数据库连接池
+  - Redis 连接池
+  - Kafka 消费延迟
+- **命名规范**：`{namespace}.{subsystem}.{metric_name}`，如 `openiot.device.connected.count`
+
+#### Logs 日志规范
+
+- **结构化输出**：日志 MUST 使用 JSON 格式，包含以下字段：
+  ```json
+  {
+    "timestamp": "2026-03-01T12:00:00.000Z",
+    "level": "INFO",
+    "traceId": "abc123",
+    "tenantId": "tenant-001",
+    "service": "device-service",
+    "message": "...",
+    "context": {}
+  }
+  ```
+- **日志级别**：
+  - ERROR：异常、错误、需要立即处理
+  - WARN：潜在问题、需要关注
+  - INFO：关键业务事件（设备上下线、用户登录等）
+  - DEBUG：调试信息（生产默认关闭）
+- **敏感信息**：日志 MUST NOT 包含密码、Token、身份证等敏感信息
+
+#### Traces 链路规范
+
+- **Trace ID 传播**：所有跨服务调用 MUST 传播 Trace ID
+- **Span 命名**：`{服务名}.{操作名}`，如 `device-service.createDevice`
+- **关键埋点**：
+  - HTTP 请求入口/出口
+  - 数据库操作
+  - Redis 操作
+  - Kafka 消息生产/消费
+  - 外部 API 调用
+
+#### 生产环境告警要求
+
+| 告警类型 | 条件 | 严重级别 |
+|----------|------|----------|
+| 服务宕机 | 健康检查失败 > 1min | Critical |
+| 错误率 | 5xx > 1% | Warning |
+| 响应延迟 | P95 > 3s | Warning |
+| 消息积压 | Kafka Lag > 10000 | Warning |
+| 设备离线率 | > 20% | Warning |
+| 内存使用 | > 85% | Warning |
+| 磁盘使用 | > 90% | Critical |
+
+#### 健康检查端点
+
+- **Liveness**: `/actuator/health/liveness` - 容器存活探针
+- **Readiness**: `/actuator/health/readiness` - 服务就绪探针
+- **详细健康**: `/actuator/health` - 包含依赖组件状态（仅内网访问）
+
+#### 实现要求
+
+- **自动装配**：可观测性组件 MUST 通过 Spring Boot Starter 自动装配
+- **开关控制**：开发环境可关闭部分采集，生产环境 MUST 全部开启
+- **性能影响**：采集开销 MUST < 5% CPU 和内存
+- **采样策略**：Traces 生产环境 SHOULD 使用采样（如 10%）降低存储成本
+
+**理由**: 生产系统必须具备"看见"能力，没有可观测性就是盲人摸象。Metrics 发现问题、Logs 定位问题、Traces 追踪问题，三者缺一不可。告警是可观测性的最后一公里，确保问题被及时感知。
+
 ## Technical Standards
 
 ### 后端技术栈
@@ -267,4 +352,4 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 - 代码审查需要检查是否符合宪法原则
 - 复杂度增加必须有合理的理由和文档
 
-**Version**: 1.5.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-03-01
+**Version**: 1.6.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-03-01

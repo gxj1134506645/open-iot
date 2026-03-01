@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+========================================
+Gateway Service Logback 配置
+========================================
+继承 common-observability 的通用配置，添加服务特定配置
+-->
+<configuration scan="true" scanPeriod="30 seconds">
+    <!-- 服务名称 -->
+    <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name" defaultValue="gateway-service"/>
+
+    <!-- 引入通用配置 -->
+    <include resource="classpath:logback-spring.xml" optional="true"/>
+
+    <!-- 服务特定日志级别 -->
+    <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="io.netty" level="INFO"/>
+
+    <!-- 开发环境：同时输出到控制台和文件 -->
+    <springProfile name="dev,local">
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- 生产环境：仅输出到控制台（由容器采集） -->
+    <springProfile name="prod,k8s">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- 测试环境 -->
+    <springProfile name="test">
+        <root level="DEBUG">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

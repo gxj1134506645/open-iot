@@ -1,0 +1,100 @@
+# ========================================
+# Open-IoT Tempo 配置
+# ========================================
+
+server:
+  http_listen_port: 3200
+  log_level: info
+
+# ========================================
+# 分布式追踪存储配置
+# ========================================
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        # OTLP gRPC 接收器 (端口 4317)
+        grpc:
+          endpoint: 0.0.0.0:4317
+        # OTLP HTTP 接收器 (端口 4318)
+        http:
+          endpoint: 0.0.0.0:4318
+
+# ========================================
+# 摄取器配置
+# ========================================
+ingester:
+  max_block_duration: 5m
+  trace_idle_period: 10s
+  complete_block_timeout: 30m
+
+# ========================================
+# 存储配置
+# ========================================
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+    pool:
+      max_workers: 100
+      queue_depth: 10000
+
+# ========================================
+# 压缩器配置
+# ========================================
+compactor:
+  compaction:
+    block_retention: 72h  # 3 天
+    compaction_window: 1h
+    max_block_bytes: 100MB
+    max_compaction_objects: 1000000
+    retention_duration: 72h
+
+# ========================================
+# 查询器配置
+# ========================================
+querier:
+  max_concurrent_queries: 20
+  frontend_worker:
+    frontend_address: 127.0.0.1:9095
+
+query_frontend:
+  max_outstanding_per_tenant: 2000
+  search:
+    concurrent_jobs: 2000
+    max_duration: 24h
+
+# ========================================
+# 指标生成器配置
+# ========================================
+metrics_generator:
+  processor:
+    service_graphs:
+      dimensions:
+        - service.name
+        - service.version
+    span_metrics:
+      dimensions:
+        - http.method
+        - http.status_code
+        - messaging.system
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+# ========================================
+# 覆盖配置
+# ========================================
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics]
+      generate_native_histograms: true

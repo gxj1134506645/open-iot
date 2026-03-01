@@ -60,14 +60,53 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,gateway,prometheus,metrics,bindings
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
     gateway:
       enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  health:
+    liveness:
+      enabled: true
+    readiness:
+      enabled: true
+
+# 可观测性配置
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 1.0
+      otlp-endpoint: http://tempo:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: true
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
 
 logging:
   level:
     com.openiot: debug
     org.springframework.cloud.gateway: debug
+  config: classpath:logback-spring.xml

@@ -1,0 +1,108 @@
+# ========================================
+# Open-IoT Loki 配置
+# ========================================
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: info
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+ruler:
+  alertmanager_url: http://alertmanager:9093
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules
+
+# ========================================
+# 日志保留策略
+# ========================================
+limits_config:
+  # 日志保留时间
+  retention_period: 168h  # 7 天
+  # 单个流的最大日志行数
+  max_streams_per_user: 10000
+  # 单个查询返回的最大日志行数
+  max_entries_limit_per_query: 5000
+  # 最大查询长度
+  max_query_length: 721h
+  # 最大查询并行度
+  max_query_parallelism: 32
+  # 卡片inality 限制
+  max_global_streams_per_user: 50000
+  # 拒绝旧日志
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+# ========================================
+# 压缩配置
+# ========================================
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+  delete_request_store: filesystem
+
+# ========================================
+# 表管理
+# ========================================
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 168h  # 7 天
+
+# ========================================
+# 摄取限制
+# ========================================
+ingester:
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 1h
+  chunk_block_size: 262144
+  chunk_encoding: snappy
+  chunk_retain_period: 1m
+  max_transfer_retries: 0
+
+# ========================================
+# 查询前端
+# ========================================
+query_scheduler:
+  max_outstanding_requests_per_tenant: 2048

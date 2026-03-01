@@ -1,0 +1,106 @@
+# ========================================
+# Open-IoT Prometheus 配置
+# ========================================
+
+global:
+  # 抓取间隔
+  scrape_interval: 15s
+  # 规则评估间隔
+  evaluation_interval: 15s
+  # 外部标签（用于联邦和远程存储）
+  external_labels:
+    cluster: 'openiot-local'
+    environment: 'dev'
+
+# 告警规则文件
+rule_files:
+  - /etc/prometheus/alert-rules.yml
+
+# Alertmanager 配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# 抓取配置
+scrape_configs:
+  # ========================================
+  # OpenIoT 微服务
+  # ========================================
+  - job_name: 'openiot-services'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    static_configs:
+      - targets:
+          - 'gateway-service:8080'
+          - 'tenant-service:8081'
+          - 'device-service:8082'
+          - 'data-service:8083'
+          - 'connect-service:8084'
+        labels:
+          group: 'openiot'
+    relabel_configs:
+      # 从 target 中提取服务名
+      - source_labels: [__address__]
+        regex: '([^:]+):\d+'
+        target_label: service
+        replacement: '${1}'
+
+  # ========================================
+  # Prometheus 自身监控
+  # ========================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # ========================================
+  # 基础设施组件
+  # ========================================
+  # Nacos
+  - job_name: 'nacos'
+    metrics_path: '/nacos/actuator/prometheus'
+    static_configs:
+      - targets: ['nacos:8848']
+        labels:
+          service: 'nacos'
+
+  # PostgreSQL Exporter (如果部署)
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Redis Exporter (如果部署)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # Kafka Exporter (如果部署)
+  # - job_name: 'kafka'
+  #   static_configs:
+  #     - targets: ['kafka-exporter:9308']
+
+  # ========================================
+  # Spring Boot Actuator (备用 - 直接抓取)
+  # ========================================
+  - job_name: 'spring-boot-services'
+    metrics_path: '/actuator/prometheus'
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/*.json
+        refresh_interval: 30s
+
+# ========================================
+# 远程写入配置 (可选 - 用于长期存储)
+# ========================================
+# remote_write:
+#   - url: "http://remote-storage:9090/api/v1/write"
+
+# ========================================
+# 远程读取配置 (可选)
+# ========================================
+# remote_read:
+#   - url: "http://remote-storage:9090/api/v1/read"

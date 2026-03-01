@@ -1,0 +1,197 @@
+# ========================================
+# Open-IoT Prometheus 告警规则
+# ========================================
+
+groups:
+  # ========================================
+  # 服务健康告警组
+  # ========================================
+  - name: service-health
+    rules:
+      # 服务宕机告警
+      - alert: ServiceDown
+        expr: up{job="spring-boot-services"} == 0 or absent(up{job="spring-boot-services"}) == 1
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "服务 {{ $labels.service }} 宕机"
+          description: "服务 {{ $labels.instance }} 已经宕机超过 1 分钟"
+          runbook_url: "https://wiki.openiot.io/troubleshooting/service-down"
+
+      # 服务重启告警
+      - alert: ServiceRestart
+        expr: changes(process_start_time_seconds{job="spring-boot-services"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          category: availability
+        annotations:
+          summary: "服务 {{ $labels.service }} 最近 5 分钟内重启"
+          description: "服务实例 {{ $labels.instance }} 在最近 5 分钟内重启了 {{ $value }} 次"
+
+  # ========================================
+  # 错误率告警组
+  # ========================================
+  - name: error-rates
+    rules:
+      # 高错误率告警 (5xx)
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{status=~"5..",service=~".+"}[5m]))
+          /
+          sum(rate(http_server_requests_seconds_count{service=~".+"}[5m])) > 0.01
+        for: 2m
+        labels:
+          severity: warning
+          category: errors
+        annotations:
+          summary: "服务 {{ $labels.service }} 5xx 错误率过高"
+          description: "5xx 错误率 {{ $value | humanizePercentage }} 超过阈值 1%"
+
+      # 错误数量激增
+      - alert: ErrorSpike
+        expr: |
+          sum(rate(http_server_requests_seconds_count{status=~"5..",service=~".+"}[5m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+          category: errors
+        annotations:
+          summary: "服务 {{ $labels.service }} 错误数量激增"
+          description: "每秒错误数 {{ $value }} 超过阈值 10"
+
+  # ========================================
+  # 延迟告警组
+  # ========================================
+  - name: latency
+    rules:
+      # P95 延迟告警
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(http_server_requests_seconds_bucket{service=~".+"}, 0.95) > 3
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "服务 {{ $labels.service }} P95 延迟过高"
+          description: "P95 延迟 {{ $value | humanizeDuration }} 超过阈值 3s"
+
+      # P99 延迟告警
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(http_server_requests_seconds_bucket{service=~".+"}, 0.99) > 5
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "服务 {{ $labels.service }} P99 延迟过高"
+          description: "P99 延迟 {{ $value | humanizeDuration }} 超过阈值 5s"
+
+  # ========================================
+  # 资源告警组
+  # ========================================
+  - name: resources
+    rules:
+      # JVM 堆内存使用率告警
+      - alert: HighJvmHeapUsage
+        expr: |
+          sum(jvm_memory_used_bytes{area="heap",service=~".+"})
+          /
+          sum(jvm_memory_max_bytes{area="heap",service=~".+"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "服务 {{ $labels.service }} JVM 堆内存使用率过高"
+          description: "堆内存使用率 {{ $value | humanizePercentage }} 超过阈值 85%"
+
+      # CPU 使用率告警
+      - alert: HighCpuUsage
+        expr: |
+          sum(rate(process_cpu_seconds{service=~".+"}[5m])) by (service) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "服务 {{ $labels.service }} CPU 使用率过高"
+          description: "CPU 使用率 {{ $value | humanizePercentage }} 超过阈值 80%"
+
+      # 数据库连接池耗尽告警
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          hikaricp_connections_pending{service=~".+"} > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: resources
+        annotations:
+          summary: "服务 {{ $labels.service }} 数据库连接池即将耗尽"
+          description: "等待获取连接的请求数 {{ $value }} 超过阈值 5"
+
+  # ========================================
+  # Kafka 告警组
+  # ========================================
+  - name: kafka
+    rules:
+      # Kafka 消费积压告警
+      - alert: KafkaConsumerLag
+        expr: |
+          sum(kafka_consumer_group_lag{service=~"data-service"}) by (group) > 10000
+        for: 5m
+        labels:
+          severity: warning
+          category: messaging
+        annotations:
+          summary: "Kafka 消费组 {{ $labels.group }} 消息积压"
+          description: "消息积压数量 {{ $value }} 超过阈值 10000"
+
+      # Kafka 消费者无响应
+      - alert: KafkaConsumerDown
+        expr: |
+          sum(kafka_consumer_group_members{service=~".+"}) by (group) == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: messaging
+        annotations:
+          summary: "Kafka 消费组 {{ $labels.group }} 无活跃消费者"
+          description: "消费组成员数为 0，可能已停止消费"
+
+  # ========================================
+  # 业务指标告警组
+  # ========================================
+  - name: business
+    rules:
+      # 设备离线率告警
+      - alert: HighDeviceOfflineRate
+        expr: |
+          (openiot_device_total_count - openiot_device_online_count)
+          /
+          openiot_device_total_count > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "设备离线率过高"
+          description: "设备离线率 {{ $value | humanizePercentage }} 超过阈值 20%"
+
+      # 消息处理失败率告警
+      - alert: HighMessageFailureRate
+        expr: |
+          sum(rate(openiot_message_failed_total[5m]))
+          /
+          sum(rate(openiot_message_received_total[5m])) > 0.05
+        for: 3m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "消息处理失败率过高"
+          description: "失败率 {{ $value | humanizePercentage }} 超过阈值 5%"

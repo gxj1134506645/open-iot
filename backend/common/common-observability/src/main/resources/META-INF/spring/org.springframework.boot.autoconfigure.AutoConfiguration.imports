@@ -1,0 +1,3 @@
+com.openiot.common.observability.config.ObservabilityAutoConfiguration
+com.openiot.common.observability.config.HikariMetricsConfig
+com.openiot.common.observability.config.RedisMetricsConfig
