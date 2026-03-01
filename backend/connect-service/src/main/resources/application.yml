@@ -31,7 +31,14 @@ spring:
 netty:
   port: 8888
   boss-threads: 1
-  worker-threads: 4
+  worker-threads: 0    # 0 表示自动（CPU核心数 * 2）
+  so-backlog: 2048     # 连接队列大小
+  so-sndbuf: 65535     # 发送缓冲区
+  so-rcvbuf: 65535     # 接收缓冲区
+  connect-timeout: 30000  # 连接超时（毫秒）
+  reader-idle-time: 120   # 读空闲超时（秒）
+  writer-idle-time: 120   # 写空闲超时（秒）
+  all-idle-time: 300      # 全空闲超时（秒）
 
 management:
   endpoints:

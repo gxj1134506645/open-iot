@@ -290,19 +290,19 @@
 
 ### 文档与脚本
 
-- [ ] T118 [P] 创建构建脚本 scripts/build.sh
-- [ ] T119 [P] 创建部署脚本 scripts/deploy.sh
-- [ ] T120 创建 README.md 项目说明文档
+- [x] T118 [P] 创建构建脚本 scripts/build.sh
+- [x] T119 [P] 创建部署脚本 scripts/deploy.sh
+- [x] T120 创建 README.md 项目说明文档
 
 ### 性能优化
 
-- [ ] T121 优化 Netty 线程模型 backend/connect-service/src/main/java/com/openiot/connect/netty/NettyServerConfig.java
-- [ ] T122 优化 Kafka 消费者配置 backend/data-service/src/main/resources/application.yml
+- [x] T121 优化 Netty 线程模型 backend/connect-service/src/main/java/com/openiot/connect/netty/NettyServer.java
+- [x] T122 优化 Kafka 消费者配置 backend/data-service/src/main/resources/application.yml
 - [ ] T123 优化 Redis 连接池配置 backend/common/common-redis/src/main/resources/redis.properties
 
 ### 可观测性
 
-- [ ] T124 [P] 添加服务健康检查 backend/*/src/main/java/com/openiot/*/config/HealthConfig.java
+- [x] T124 [P] 添加服务健康检查 backend/*/src/main/java/com/openiot/*/config/HealthConfig.java
 - [ ] T125 [P] 添加链路追踪配置 backend/common/common-core/src/main/java/com/openiot/common/core/config/TraceConfig.java
 - [ ] T126 创建监控指标收集 backend/data-service/src/main/java/com/openiot/data/metrics/DeviceMetrics.java
 

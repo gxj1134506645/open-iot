@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import jakarta.annotation.PreDestroy;
 
 /**
  * Netty TCP 服务器
+ * 支持高并发设备连接
  */
 @Slf4j
 @Component
@@ -33,8 +35,29 @@ public class NettyServer {
     @Value("${netty.boss-threads:1}")
     private int bossThreads;
 
-    @Value("${netty.worker-threads:4}")
+    @Value("${netty.worker-threads:0}")
     private int workerThreads;
+
+    @Value("${netty.so-backlog:1024}")
+    private int soBacklog;
+
+    @Value("${netty.so-sndbuf:65535}")
+    private int soSndbuf;
+
+    @Value("${netty.so-rcvbuf:65535}")
+    private int soRcvbuf;
+
+    @Value("${netty.connect-timeout:30000}")
+    private int connectTimeout;
+
+    @Value("${netty.reader-idle-time:120}")
+    private int readerIdleTime;
+
+    @Value("${netty.writer-idle-time:120}")
+    private int writerIdleTime;
+
+    @Value("${netty.all-idle-time:300}")
+    private int allIdleTime;
 
     @Autowired
     private TcpMessageHandler messageHandler;
@@ -45,32 +68,47 @@ public class NettyServer {
     @PostConstruct
     public void start() {
         new Thread(() -> {
+            // boss 线程组：处理连接请求
             bossGroup = new NioEventLoopGroup(bossThreads);
+
+            // worker 线程组：处理 I/O 操作
+            // 默认 0 表示使用 Netty 默认值 (CPU 核心数 * 2)
             workerGroup = new NioEventLoopGroup(workerThreads);
 
             try {
                 ServerBootstrap bootstrap = new ServerBootstrap();
                 bootstrap.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
-                        .option(ChannelOption.SO_BACKLOG, 1024)
+                        // 服务端配置
+                        .option(ChannelOption.SO_BACKLOG, soBacklog)
+                        .option(ChannelOption.SO_REUSEADDR, true)
+                        // 客户端连接配置
                         .childOption(ChannelOption.SO_KEEPALIVE, true)
                         .childOption(ChannelOption.TCP_NODELAY, true)
+                        .childOption(ChannelOption.SO_SNDBUF, soSndbuf)
+                        .childOption(ChannelOption.SO_RCVBUF, soRcvbuf)
+                        .childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout)
                         .childHandler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             protected void initChannel(SocketChannel ch) {
                                 ch.pipeline()
+                                        // 空闲检测（读空闲、写空闲、全空闲）
+                                        .addLast("idle", new IdleStateHandler(
+                                                readerIdleTime, writerIdleTime, allIdleTime))
                                         // 长度字段解码器（解决粘包/拆包问题）
-                                        .addLast(new LengthFieldBasedFrameDecoder(65535, 0, 4, 0, 4))
+                                        .addLast("frameDecoder", new LengthFieldBasedFrameDecoder(
+                                                65535, 0, 4, 0, 4))
                                         // 字符串编解码器
-                                        .addLast(new StringDecoder(CharsetUtil.UTF_8))
-                                        .addLast(new StringEncoder(CharsetUtil.UTF_8))
+                                        .addLast("decoder", new StringDecoder(CharsetUtil.UTF_8))
+                                        .addLast("encoder", new StringEncoder(CharsetUtil.UTF_8))
                                         // 业务处理器
-                                        .addLast(messageHandler);
+                                        .addLast("handler", messageHandler);
                             }
                         });
 
                 ChannelFuture future = bootstrap.bind(port).sync();
-                log.info("Netty TCP Server 启动成功，端口: {}", port);
+                log.info("Netty TCP Server 启动成功 - 端口: {}, Boss线程: {}, Worker线程: {}",
+                        port, bossThreads, workerThreads == 0 ? "自动" : workerThreads);
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
                 log.error("Netty Server 启动失败", e);

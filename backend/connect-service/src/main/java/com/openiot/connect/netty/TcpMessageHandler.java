@@ -5,6 +5,8 @@ import com.openiot.connect.protocol.ProtocolAdapter;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -68,5 +70,23 @@ public class TcpMessageHandler extends SimpleChannelInboundHandler<String> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("TCP连接异常: {}", ctx.channel().remoteAddress(), cause);
         ctx.close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent event = (IdleStateEvent) evt;
+            if (event.state() == IdleState.READER_IDLE) {
+                log.warn("读空闲超时，关闭连接: {}", ctx.channel().remoteAddress());
+                ctx.close();
+            } else if (event.state() == IdleState.WRITER_IDLE) {
+                log.debug("写空闲超时: {}", ctx.channel().remoteAddress());
+            } else if (event.state() == IdleState.ALL_IDLE) {
+                log.warn("全空闲超时，关闭连接: {}", ctx.channel().remoteAddress());
+                ctx.close();
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
     }
 }
