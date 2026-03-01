@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   # ==================== Nacos (注册中心 + 配置中心) ====================
   nacos:
-    image: nacos/nacos-server:v2.3.2
+    # Use slim variant for better cross-platform support (Windows amd64 / macOS arm64)
+    image: nacos/nacos-server:v2.3.2-slim
     container_name: open-iot-nacos
     environment:
       - MODE=standalone
@@ -18,7 +17,7 @@ services:
 
   # ==================== PostgreSQL (主数据库) ====================
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: open-iot-postgres
     environment:
       - POSTGRES_USER=openiot
