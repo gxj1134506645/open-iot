@@ -76,3 +76,5 @@ testng-results.xml
 
 # MCP
 .claude/settings.local.json
+.mcp.json
+.serena/memories/
