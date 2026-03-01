@@ -12,6 +12,8 @@
 - ✅ **Kafka 消息驱动**: 实时 + 异步双通道数据流
 - ✅ **Netty 高并发接入**: TCP 私有协议 + MQTT (EMQX) + HTTP 多协议支持
 - ✅ **多租户数据库设计**: 全链路租户隔离
+- ✅ **严格 RBAC 权限模型**: 用户-角色-权限动态配置
+- ✅ **分布式能力**: Redisson 分布式锁 + Seata AT 分布式事务
 
 ## 🏗️ 架构
 
@@ -61,22 +63,57 @@
 | Docker | 24+ |
 | Docker Compose | 2.20+ |
 
-### 1. 启动基础设施
+### 1. 克隆项目
 
 ```bash
+git clone https://github.com/gxj1134506645/open-iot.git
+cd open-iot
+```
+
+### 2. 启动基础设施
+
+```bash
+# 仅启动基础设施（Nacos、PostgreSQL、Redis、MongoDB、Kafka、EMQX）
+./scripts/deploy.sh --infra
+
+# 或手动启动
 cd infrastructure/docker
 docker-compose up -d
 ```
 
 等待所有服务启动（约 2-3 分钟）。
 
-### 2. 构建并启动后端
+### 3. 初始化数据库
+
+数据库表会在首次启动时通过 Flyway 自动创建。如需手动执行：
+
+```bash
+# 连接 PostgreSQL
+psql -h localhost -U openiot -d openiot -f infrastructure/sql/migrations/*.sql
+```
+
+### 4. 构建项目
+
+```bash
+# 构建全部
+./scripts/build.sh
+
+# 仅构建后端
+./scripts/build.sh -b
+
+# 仅构建前端
+./scripts/build.sh -f
+
+# 跳过测试构建
+./scripts/build.sh -s
+```
+
+### 5. 启动后端服务
 
 ```bash
 cd backend
-mvn clean package -DskipTests
 
-# 启动各服务
+# 启动各服务（按顺序）
 java -jar gateway-service/target/gateway-service.jar &
 java -jar tenant-service/target/tenant-service.jar &
 java -jar device-service/target/device-service.jar &
@@ -84,7 +121,7 @@ java -jar connect-service/target/connect-service.jar &
 java -jar data-service/target/data-service.jar &
 ```
 
-### 3. 启动前端
+### 6. 启动前端
 
 ```bash
 cd frontend
@@ -92,12 +129,28 @@ npm install
 npm run dev
 ```
 
-### 4. 访问
+### 7. 访问服务
 
-- 前端: http://localhost:5173
-- Nacos: http://localhost:8848/nacos (nacos/nacos)
-- EMQX Dashboard: http://localhost:18083 (admin/admin123)
-- Kafka UI: http://localhost:9000
+| 服务 | 地址 | 账号 |
+|------|------|------|
+| 前端 | http://localhost:5173 | - |
+| API 网关 | http://localhost:8080 | - |
+| Nacos | http://localhost:8848/nacos | nacos/nacos |
+| EMQX | http://localhost:18083 | admin/public |
+| Kafka UI | http://localhost:9000 | - |
+
+### 常用命令
+
+```bash
+# 查看服务日志
+./scripts/deploy.sh --logs
+
+# 停止服务
+./scripts/deploy.sh --stop
+
+# 查看服务状态
+docker-compose ps
+```
 
 ## 📦 项目结构
 
@@ -106,24 +159,57 @@ open-iot/
 ├── backend/                    # 后端服务
 │   ├── common/                 # 公共模块
 │   │   ├── common-core/        # 核心工具类
-│   │   ├── common-redis/       # Redis 配置
+│   │   ├── common-redis/       # Redis 配置 + Redisson 分布式锁
 │   │   ├── common-kafka/       # Kafka 配置
 │   │   ├── common-mongodb/     # MongoDB 配置
-│   │   └── common-security/    # 安全认证
-│   ├── gateway-service/        # API 网关
-│   ├── tenant-service/         # 租户管理
-│   ├── device-service/         # 设备管理
-│   ├── connect-service/        # 设备接入 (Netty)
-│   └── data-service/           # 数据处理
-├── frontend/                   # 前端 (Vue 3 + Vite)
+│   │   └── common-security/    # Sa-Token 安全认证
+│   ├── gateway-service/        # API 网关 (8080)
+│   ├── tenant-service/         # 租户管理 (8081)
+│   ├── device-service/         # 设备管理 (8082)
+│   ├── connect-service/        # 设备接入 - Netty TCP (8083)
+│   └── data-service/           # 数据处理 (8085)
+├── frontend/                   # 前端 (Vue 3 + Vite + Element Plus)
 ├── infrastructure/             # 基础设施
-│   ├── docker/                 # Docker 配置
+│   ├── docker/                 # Docker Compose 配置
 │   ├── emqx/                   # EMQX 配置
 │   ├── kafka/                  # Kafka 配置
-│   └── sql/                    # 数据库脚本
+│   └── sql/                    # 数据库迁移脚本 (Flyway)
+├── scripts/                    # 构建部署脚本
+│   ├── build.sh                # 构建脚本
+│   └── deploy.sh               # 部署脚本
 ├── specs/                      # 功能规格文档
+│   └── 001-mvp-core/           # MVP 核心功能规格
+├── .specify/                   # 项目宪法和模板
 ├── Jenkinsfile                 # CI/CD 流水线
 └── README.md
+```
+
+## 🔐 权限模型
+
+采用严格 RBAC（Role-Based Access Control）模型：
+
+```
+用户(sys_user) ←→ 角色(sys_role) ←→ 权限(sys_permission)
+        │                    │
+    sys_user_role       sys_role_permission
+```
+
+**预置角色：**
+
+| 角色 | 权限范围 |
+|------|----------|
+| ADMIN | 全部权限（平台级） |
+| TENANT_ADMIN | 用户、设备、数据、监控（租户级） |
+| TENANT_USER | 设备、数据、监控（仅查看） |
+
+**前端权限控制：**
+
+```vue
+<!-- 按钮级权限 -->
+<el-button v-permission="'device:create'">创建设备</el-button>
+
+<!-- 角色控制 -->
+<div v-role="'ADMIN'">仅管理员可见</div>
 ```
 
 ## 🔧 CI/CD
@@ -161,4 +247,4 @@ open-iot/
 
 ---
 
-**Version**: 1.0.0 | **Author**: gxj1134506645
+**Version**: 1.0.0-SNAPSHOT | **Author**: [gxj1134506645](https://github.com/gxj1134506645)
