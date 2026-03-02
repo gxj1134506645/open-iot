@@ -70,7 +70,7 @@ groups:
       # P95 延迟告警
       - alert: HighLatencyP95
         expr: |
-          histogram_quantile(http_server_requests_seconds_bucket{service=~".+"}, 0.95) > 3
+          histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{service=~".+"}[5m])) > 3
         for: 5m
         labels:
           severity: warning
@@ -82,7 +82,7 @@ groups:
       # P99 延迟告警
       - alert: HighLatencyP99
         expr: |
-          histogram_quantile(http_server_requests_seconds_bucket{service=~".+"}, 0.99) > 5
+          histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{service=~".+"}[5m])) > 5
         for: 5m
         labels:
           severity: critical

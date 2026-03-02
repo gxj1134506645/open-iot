@@ -28,7 +28,7 @@ services:
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
     networks:
-      - openiot-network
+      - open-iot-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
@@ -49,7 +49,7 @@ services:
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
-      - openiot-network
+      - open-iot-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3100/ready"]
@@ -72,7 +72,7 @@ services:
       - tempo-data:/var/tempo
     command: -config.file=/etc/tempo.yaml
     networks:
-      - openiot-network
+      - open-iot-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3200/ready"]
@@ -102,7 +102,7 @@ services:
       # 启用 Explore 功能
       - GF_FEATURE_TOGGLES_ENABLE=traceToLogs
     networks:
-      - openiot-network
+      - open-iot-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
@@ -121,7 +121,7 @@ services:
     image: prom/alertmanager:v0.26.0
     container_name: openiot-alertmanager
     ports:
-      - "9093:9093"
+      - "9094:9093"
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
       - alertmanager-data:/alertmanager
@@ -130,7 +130,7 @@ services:
       - '--storage.path=/alertmanager'
       - '--web.external-url=http://localhost:9093'
     networks:
-      - openiot-network
+      - open-iot-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:9093/-/healthy"]
@@ -157,5 +157,5 @@ volumes:
 # 网络
 # ========================================
 networks:
-  openiot-network:
-    external: true
+  open-iot-network:
+    driver: bridge

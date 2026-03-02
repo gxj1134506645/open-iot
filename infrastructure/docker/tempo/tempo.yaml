@@ -49,9 +49,8 @@ compactor:
   compaction:
     block_retention: 72h  # 3 天
     compaction_window: 1h
-    max_block_bytes: 100MB
+    max_block_bytes: 104857600  # 100MB in bytes
     max_compaction_objects: 1000000
-    retention_duration: 72h
 
 # ========================================
 # 查询器配置
@@ -94,7 +93,4 @@ metrics_generator:
 # 覆盖配置
 # ========================================
 overrides:
-  defaults:
-    metrics_generator:
-      processors: [service-graphs, span-metrics]
-      generate_native_histograms: true
+  per_tenant_override_config: /runtime_config/overrides.yaml
