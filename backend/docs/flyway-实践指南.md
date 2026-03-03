@@ -2,6 +2,109 @@
 
 > 本指南结合 open-iot 项目，详细说明 Flyway 的使用方法、最佳实践和完整工作流程
 
+## ⚠️ 重要：Flyway 工作机制澄清
+
+### 核心理解
+
+**Flyway 并不会自动检测代码变化并生成迁移脚本！**
+
+#### ❌ 常见误解
+
+```
+Entity 代码更新 → Flyway 自动检测 → 自动生成 SQL → 自动执行迁移
+```
+
+#### ✅ 正确理解
+
+```
+开发者手动编写 SQL 脚本 → Flyway 执行脚本 → 更新数据库
+```
+
+### Flyway vs Hibernate ddl-auto
+
+你可能混淆了 Flyway 和 Hibernate 的自动更新功能。
+
+#### Hibernate `ddl-auto=update`（自动同步）
+
+```yaml
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update  # 自动检测 Entity 变化并更新数据库
+```
+
+**工作原理**：
+```
+Entity 添加字段 → Hibernate 自动检测 → 自动生成 ALTER TABLE → 自动执行
+```
+
+**问题**：
+- ❌ 没有版本控制
+- ❌ 无法回滚
+- ❌ 生产环境危险
+- ❌ 可能丢失数据
+
+#### Flyway（手动管理）
+
+```yaml
+spring:
+  flyway:
+    enabled: true  # 只执行手动编写的脚本
+```
+
+**工作原理**：
+```
+开发者编写 SQL 脚本 → Flyway 执行脚本 → 更新数据库
+```
+
+**优点**：
+- ✅ 版本控制
+- ✅ 可追溯
+- ✅ 可审查
+- ✅ 生产环境安全
+
+### Flyway 职责边界
+
+| 问题 | 答案 |
+|------|------|
+| Flyway 怎么知道要修改哪个表？ | **你手动编写 SQL 告诉它** |
+| Flyway 怎么知道要修改哪个字段？ | **你手动编写 SQL 告诉它** |
+| Flyway 怎么知道要改类型/索引/注释？ | **你手动编写 SQL 告诉它** |
+| Entity 变化会触发 Flyway 吗？ | **不会！完全没有关系** |
+
+### 完整工作流程
+
+```
+┌─────────────────────────────────────────┐
+│  开发者（你）                            │
+│  1. 手动编写 SQL 脚本                   │
+│  2. 手动/AI 辅助更新代码│
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │  Flyway               │
+        │  只负责执行 SQL 脚本   │
+        └───────────────────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │  PostgreSQL           │
+        │  数据库被更新          │
+        └───────────────────────┘
+```
+
+### 对比其他工具
+
+| 工具 | 是否自动检测 Entity | 是否需要手动写 SQL |
+|------|-------------------|------------------|
+| **Flyway** | ❌ 否 | ✅ 是 |
+| **Liquibase** | ❌ 否 | ✅ 是 |
+| **Hibernate ddl-auto** | ✅ 是 | ❌ 否（自动） |
+| **MyBatis Plus** | ❌ 否 | ✅ 是 |
+
+---
+
 ## 目录
 
 - [1. Flyway 核心概念](#1-flyway-核心概念)
@@ -84,14 +187,30 @@ U1.0.1__drop_user_table.sql      # Undo Migration（回滚，企业版功能）
 
 ### 2.2 迁移脚本位置
 
+**统一迁移脚本目录**：`infrastructure/sql/migrations/`
+
 ```
-backend/tenant-service/src/main/resources/db/migration/
+infrastructure/sql/migrations/
+├── README.md                         # 说明文档
 ├── V1.0.0__init_schema.sql          # 初始化表结构
 ├── V1.0.1__init_data.sql            # 初始化数据
-├── V1.1.0__add_device_config.sql    # 新增设备配置表
-├── V1.1.1__add_index_for_device.sql # 新增索引
+├── V1.1.0__rbac_tables.sql          # RBAC 权限表
 └── ...
 ```
+
+**配置说明**：
+
+```yaml
+# backend/tenant-service/src/main/resources/application.yml
+spring.flyway:
+  enabled: true
+  locations: filesystem:infrastructure/sql/migrations  # 使用项目根目录的统一迁移脚本
+```
+
+**优势**：
+- ✅ 集中管理所有迁移脚本
+- ✅ 便于版本控制和审查
+- ✅ 独立于具体服务
 
 ---
 
@@ -237,8 +356,8 @@ WHERE tenant_code = 'TEST001';
 **步骤 1：创建迁移脚本**
 
 ```bash
-# 1. 进入迁移脚本目录
-cd backend/tenant-service/src/main/resources/db/migration
+# 1. 进入迁移脚本目录（项目根目录）
+cd infrastructure/sql/migrations
 
 # 2. 查看当前最新版本号
 ls -la | grep V
@@ -381,6 +500,7 @@ WHERE tablename = 'alarm_config';
 
 ```bash
 # 版本号：V1.1.1（修订号递增）
+cd infrastructure/sql/migrations
 touch V1.1.1__add_alarm_description_field.sql
 ```
 
@@ -449,6 +569,7 @@ mvn spring-boot:run
 **步骤 1：创建迁移脚本**
 
 ```bash
+cd infrastructure/sql/migrations
 touch V1.1.2__modify_alarm_level_type.sql
 ```
 
@@ -1062,7 +1183,7 @@ pg_restore -h 127.0.0.1 -p 5432 -U openiot -d openiot_restore backup_20260303_15
 
 ```bash
 # 1. 创建迁移脚本
-cd backend/tenant-service/src/main/resources/db/migration
+cd infrastructure/sql/migrations
 touch V1.2.0__add_product_table.sql
 
 # 2. 编写 SQL（参考第 3.2 节）

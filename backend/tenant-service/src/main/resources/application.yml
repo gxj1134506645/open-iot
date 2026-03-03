@@ -46,11 +46,11 @@ sa-token:
 
 # Flyway 配置（集中式数据库迁移管理）
 # 说明：本项目采用共享数据库架构，tenant-service 负责统一管理所有服务的数据库表
-# 包含：tenant、sys_user、device、device_trajectory 等所有业务表
+# 包含：tenant、sys_user、device、device_trajectory、RBAC 权限表等所有业务表
 # 注意：其他服务（device-service、data-service）的 Flyway 已禁用，避免重复迁移
 spring.flyway:
   enabled: true
-  locations: classpath:db/migration
+  locations: filesystem:infrastructure/sql/migrations  # 使用项目根目录的统一迁移脚本
   baseline-on-migrate: true
   validate-on-migrate: true
   out-of-order: false  # 禁止乱序执行
