@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-========================================
-Gateway Service Logback 配置
-========================================
-继承 common-observability 的通用配置，添加服务特定配置
--->
 <configuration scan="true" scanPeriod="30 seconds">
     <!-- 服务名称 -->
     <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name" defaultValue="gateway-service"/>
@@ -14,27 +8,32 @@ Gateway Service Logback 配置
 
     <!-- 服务特定日志级别 -->
     <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
-    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.web" level="DEBUG"/>
     <logger name="io.netty" level="INFO"/>
 
-    <!-- 开发环境：同时输出到控制台和文件 -->
+    <!-- 开发环境：使用可读格式输出到控制台 -->
     <springProfile name="dev,local">
-        <root level="INFO">
-            <appender-ref ref="JSON_CONSOLE"/>
+        <!-- 降低 Spring 框架日志级别，显示启动信息 -->
+        <logger name="org.springframework.boot" level="DEBUG"/>
+        <logger name="org.springframework.cloud" level="DEBUG"/>
+        <logger name="org.springframework.web" level="DEBUG"/>
+
+        <root level="DEBUG">
+            <appender-ref ref="ASYNC_PRETTY"/>
         </root>
     </springProfile>
 
-    <!-- 生产环境：仅输出到控制台（由容器采集） -->
+    <!-- 生产环境：使用 JSON 格式输出（由容器采集） -->
     <springProfile name="prod,k8s">
         <root level="INFO">
             <appender-ref ref="ASYNC_JSON"/>
         </root>
     </springProfile>
 
-    <!-- 测试环境 -->
+    <!-- 测试环境：使用 JSON 格式输出 -->
     <springProfile name="test">
         <root level="DEBUG">
-            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="ASYNC_JSON"/>
         </root>
     </springProfile>
 </configuration>

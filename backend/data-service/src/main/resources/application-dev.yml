@@ -1,0 +1,64 @@
+server:
+  port: 8085
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # 开发环境数据源
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/openiot_dev
+    username: openiot
+    password: openiot123
+
+  # 开发环境 Redis
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: openiot123
+      database: 0
+    mongodb:
+      uri: mongodb://openiot:openiot123@127.0.0.1:27017/openiot_dev?authSource=admin
+      auto-index-creation: true
+
+  # 开发环境 Kafka
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+    consumer:
+      group-id: data-service-dev
+      max-poll-records: 100
+    listener:
+      concurrency: 2
+
+# 开发环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.kafka: DEBUG
+
+# MyBatis Plus 开发环境配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# 可观测性配置（开发环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 1.0  # 100% 采样
+      otlp-endpoint: http://localhost:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: false  # 开发环境不脱敏
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
+      mongodb-enabled: true
+      kafka-enabled: true

@@ -4,8 +4,10 @@ server:
 spring:
   application:
     name: gateway-service
-  config:
-    import: "optional:nacos:"
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # Nacos 配置（公共）
   cloud:
     nacos:
       discovery:
@@ -16,6 +18,8 @@ spring:
         file-extension: yaml
         namespace: public
         enabled: false
+
+    # Gateway 路由配置（公共）
     gateway:
       discovery:
         locator:
@@ -40,13 +44,8 @@ spring:
             - Path=/api/v1/data/**,/api/v1/replay/**,/api/v1/sse/**
           filters:
             - StripPrefix=0
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password: openiot123
-      database: 0
 
+# Sa-Token 配置（公共）
 sa-token:
   token-name: Authorization
   timeout: 86400
@@ -56,11 +55,12 @@ sa-token:
   token-style: uuid
   is-log: false
 
+# Actuator 配置（公共）
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway,prometheus,metrics,bindings
+        include: health,info,gateway,prometheus,metrics
   endpoint:
     health:
       show-details: always
@@ -69,8 +69,6 @@ management:
     gateway:
       enabled: true
     prometheus:
-      enabled: true
-    metrics:
       enabled: true
   prometheus:
     metrics:
@@ -90,23 +88,17 @@ management:
     readiness:
       enabled: true
 
-# 可观测性配置
+# 可观测性配置（公共）
 openiot:
   observability:
     tracing:
       enabled: true
-      sampling-probability: 1.0
-      otlp-endpoint: http://localhost:4317
     logging:
       tenant-mdc: true
-      sensitive-data-masking: true
     metrics:
       business-enabled: true
-      hikari-enabled: true
       redis-enabled: true
 
+# 日志配置
 logging:
-  level:
-    com.openiot: debug
-    org.springframework.cloud.gateway: debug
   config: classpath:logback-spring.xml

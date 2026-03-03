@@ -1,0 +1,50 @@
+server:
+  port: 8081
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  # 测试环境数据源
+  datasource:
+    url: jdbc:postgresql://test-db.internal:5432/openiot_test
+    username: openiot_test
+    password: ${DB_PASSWORD}
+
+  # 测试环境 Redis
+  data:
+    redis:
+      host: test-redis.internal
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 1
+
+  # 测试环境 Kafka
+  kafka:
+    bootstrap-servers: test-kafka.internal:9092
+
+# 测试环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: DEBUG
+    com.baomidou.mybatisplus: INFO
+    org.springframework.web: INFO
+    org.springframework.kafka: INFO
+    io.netty: WARN
+
+# 可观测性配置（测试环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 0.5  # 50% 采样
+      otlp-endpoint: http://test-otel-collector:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: true  # 测试环境脱敏
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true

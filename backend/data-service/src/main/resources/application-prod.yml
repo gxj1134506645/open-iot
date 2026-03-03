@@ -1,0 +1,84 @@
+server:
+  port: 8085
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # 生产环境数据源
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:prod-db.internal}:5432/${DB_NAME:openiot}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # 生产环境 Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:prod-redis.internal}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 2
+      lettuce:
+        pool:
+          max-active: 30
+          max-idle: 15
+          min-idle: 5
+    mongodb:
+      uri: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST:prod-mongo1}:27017,${MONGODB_HOST:prod-mongo2}:27017,${MONGODB_HOST:prod-mongo3}:27017/${DB_NAME:openiot}?authSource=admin&replicaSet=rs0
+      auto-index-creation: false
+
+  # 生产环境 Kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:prod-kafka1:9092,prod-kafka2:9092,prod-kafka3:9092}
+    consumer:
+      group-id: data-service-prod
+      max-poll-records: 500
+      fetch-min-size: 2048
+      fetch-max-wait: 1000ms
+    listener:
+      concurrency: 5
+    producer:
+      acks: all
+      retries: 5
+      batch-size: 32768
+      buffer-memory: 67108864
+      linger-ms: 10
+      compression-type: lz4
+
+# 生产环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: INFO
+    com.baomidou.mybatisplus: INFO
+    org.springframework.data.mongodb: WARN
+    org.springframework.kafka: INFO
+
+# MyBatis Plus 生产环境配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+# 可观测性配置（生产环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 0.1  # 10% 采样
+      otlp-endpoint: http://${OTEL_HOST:prod-otel-collector}:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: true  # 生产环境必须脱敏
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
+      mongodb-enabled: true
+      kafka-enabled: true

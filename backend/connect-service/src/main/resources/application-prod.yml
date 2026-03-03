@@ -1,0 +1,69 @@
+server:
+  port: 8082
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # 生产环境 Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:prod-redis.internal}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 2
+      lettuce:
+        pool:
+          max-active: 30
+          max-idle: 15
+          min-idle: 5
+
+  # 生产环境 Kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS:prod-kafka1:9092,prod-kafka2:9092,prod-kafka3:9092}
+    producer:
+      acks: all
+      retries: 3
+      batch-size: 16384
+      buffer-memory: 33554432
+      linger-ms: 5
+      compression-type: lz4
+
+# 生产环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: INFO
+    com.openiot.connect: INFO
+    io.netty: WARN
+    org.springframework.kafka: INFO
+
+# Netty 生产环境配置
+netty:
+  port: 8888
+  boss-threads: 2
+  worker-threads: 0  # 自动设置为 CPU核心数 * 2
+  so-backlog: 8192
+  so-sndbuf: 131072
+  so-rcvbuf: 131072
+  connect-timeout: 30000
+  reader-idle-time: 300
+  writer-idle-time: 300
+  all-idle-time: 600
+
+# 可观测性配置（生产环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 0.1  # 10% 采样
+      otlp-endpoint: http://${OTEL_HOST:prod-otel-collector}:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: true  # 生产环境必须脱敏
+    metrics:
+      business-enabled: true
+      netty-enabled: true
+      redis-enabled: true
+      kafka-enabled: true

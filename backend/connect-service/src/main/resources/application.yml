@@ -4,8 +4,10 @@ server:
 spring:
   application:
     name: connect-service
-  config:
-    import: "optional:nacos:"
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # Nacos 配置（公共）
   cloud:
     nacos:
       discovery:
@@ -16,18 +18,32 @@ spring:
         file-extension: yaml
         namespace: public
         enabled: false
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password: openiot123
-      database: 0
+
+  # Kafka 配置（公共）
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+# Netty 配置（公共）
+netty:
+  port: 8888
+  boss-threads: 1
+  worker-threads: 0    # 0 表示自动（CPU核心数 * 2）
+  so-backlog: 2048     # 连接队列大小
+  so-sndbuf: 65535     # 发送缓冲区
+  so-rcvbuf: 65535     # 接收缓冲区
+  connect-timeout: 30000  # 连接超时（毫秒）
+  reader-idle-time: 120   # 读空闲超时（秒）
+  writer-idle-time: 120   # 写空闲超时（秒）
+  all-idle-time: 300      # 全空闲超时（秒）
+  metrics:
+    enabled: true
+    connections: true
+    bytes: true
+    latency: true
+
+# Actuator 配置（公共）
 management:
   endpoints:
     web:
@@ -60,42 +76,19 @@ management:
     readiness:
       enabled: true
 
-# 可观测性配置
+# 可观测性配置（公共）
 openiot:
   observability:
     tracing:
       enabled: true
-      sampling-probability: 1.0
-      otlp-endpoint: http://localhost:4317
     logging:
       tenant-mdc: true
-      sensitive-data-masking: true
     metrics:
       business-enabled: true
       netty-enabled: true
       redis-enabled: true
       kafka-enabled: true
 
-# Netty 指标配置
-netty:
-  port: 8888
-  boss-threads: 1
-  worker-threads: 0    # 0 表示自动（CPU核心数 * 2）
-  so-backlog: 2048     # 连接队列大小
-  so-sndbuf: 65535     # 发送缓冲区
-  so-rcvbuf: 65535     # 接收缓冲区
-  connect-timeout: 30000  # 连接超时（毫秒）
-  reader-idle-time: 120   # 读空闲超时（秒）
-  writer-idle-time: 120   # 写空闲超时（秒）
-  all-idle-time: 300      # 全空闲超时（秒）
-  metrics:
-    enabled: true
-    connections: true
-    bytes: true
-    latency: true
-
+# 日志配置
 logging:
-  level:
-    com.openiot: debug
-    io.netty: info
   config: classpath:logback-spring.xml
