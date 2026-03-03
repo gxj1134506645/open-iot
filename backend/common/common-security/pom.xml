@@ -27,10 +27,11 @@
             <artifactId>common-redis</artifactId>
         </dependency>
 
-        <!-- Sa-Token -->
+        <!-- Sa-Token - 可选依赖，由使用方决定使用 Servlet 还是 Reactor 版本 -->
         <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>cn.dev33</groupId>
@@ -41,6 +42,7 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Transmittable Thread Local -->
@@ -50,10 +52,11 @@
             <version>2.14.4</version>
         </dependency>
 
-        <!-- Spring Boot Web -->
+        <!-- Spring Boot Web - 可选依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 

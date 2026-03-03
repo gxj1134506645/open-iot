@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
@@ -19,7 +20,7 @@ import org.springframework.context.annotation.Bean;
  * <h3>关键指标：</h3>
  * <ul>
  *   <li>lettuce.command.completion - 命令完成延迟</li>
- *   <li>lettuce.connection.active - 活跃连接数</li>
+*   <li>lettuce.connection.active - 活跃连接数</li>
  *   <li>lettuce.connection.idle - 空闲连接数</li>
  *   <li>lettuce.connection.pending - 等待中的命令数</li>
  * </ul>
@@ -37,8 +38,10 @@ public class RedisMetricsConfig {
      * 配置 Lettuce 客户端资源
      *
      * <p>使用 Micrometer 记录 Redis 命令延迟。
+     * 仅在 Spring Boot 未提供 ClientResources bean 时才创建。
      */
     @Bean(destroyMethod = "shutdown")
+    @ConditionalOnMissingBean(ClientResources.class)
     public ClientResources lettuceClientResources(MeterRegistry meterRegistry) {
         log.info("Lettuce Redis metrics binding enabled");
 

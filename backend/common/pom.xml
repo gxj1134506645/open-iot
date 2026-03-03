@@ -21,6 +21,7 @@
         <module>common-kafka</module>
         <module>common-mongodb</module>
         <module>common-security</module>
+        <module>common-observability</module>
     </modules>
 
 </project>

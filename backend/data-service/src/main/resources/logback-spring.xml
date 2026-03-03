@@ -1,9 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds">
+    <!-- 服务名称 -->
     <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name" defaultValue="data-service"/>
+    <springProperty scope="context" name="ENV" source="spring.profiles.active" defaultValue="dev"/>
 
-    <!-- 引入通用配置 -->
-    <include resource="classpath:logback-spring.xml" optional="true"/>
+    <!-- ======================================== -->
+    <!-- 控制台输出 (可读格式 - 开发环境) -->
+    <!-- ======================================== -->
+    <appender name="PRETTY_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-N/A}] [%X{tenantId:-N/A}] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ======================================== -->
+    <!-- 控制台输出 (JSON 格式) -->
+    <!-- ======================================== -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSSZ</timestampPattern>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>tenantId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeCallerData>true</includeCallerData>
+            <customFields>{"service":"${SERVICE_NAME}","env":"${ENV}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- ======================================== -->
+    <!-- 异步 Appender (提升性能) -->
+    <!-- ======================================== -->
+    <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="JSON_CONSOLE"/>
+    </appender>
+
+    <appender name="ASYNC_PRETTY" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="PRETTY_CONSOLE"/>
+    </appender>
 
     <!-- 服务特定日志级别 -->
     <logger name="com.baomidou.mybatisplus" level="DEBUG"/>

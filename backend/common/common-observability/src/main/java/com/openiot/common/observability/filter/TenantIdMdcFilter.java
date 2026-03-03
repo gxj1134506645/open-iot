@@ -1,6 +1,8 @@
 package com.openiot.common.observability.filter;
 
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -27,11 +29,15 @@ import java.io.IOException;
  *   <li>请求头 X-Tenant-Id（Gateway 注入）</li>
  * </ol>
  *
+ * <p><b>注意：</b>此类仅在 Servlet 环境下加载，WebFlux 环境下不会加载。
+ *
  * @author OpenIoT Team
  * @since 1.0.0
  */
 @Slf4j
 @Component
+@ConditionalOnClass(name = "jakarta.servlet.Filter")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class TenantIdMdcFilter extends OncePerRequestFilter {
 

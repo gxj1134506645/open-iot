@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -27,10 +29,14 @@ import jakarta.servlet.http.HttpServletResponse;
  *   <li>自动生成新的 Trace ID（UUID 格式）</li>
  * </ol>
  *
+ * <p><b>注意：</b>此类仅在 Servlet 环境下加载，WebFlux 环境下不会加载。
+ *
  * @author OpenIoT Team
  * @since 1.0.0
  */
 @Component
+@ConditionalOnClass(name = "jakarta.servlet.Filter")
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class TraceIdFilter extends OncePerRequestFilter {
 
