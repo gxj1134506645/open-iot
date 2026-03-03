@@ -79,11 +79,74 @@ wrapper.apply("tenant_id = " + tenantId);
 
 ---
 
-## 分布式规范
+## Redis 使用规范
 
-### 分布式锁（Redisson）
+### RedisTemplate vs Redisson 分工
 
-**使用场景：** 跨服务/跨实例的资源竞争，如设备状态更新、配额检查
+**RedisTemplate**（简单缓存操作）：
+- String 操作：缓存对象、计数器、分布式 ID
+- Hash 操作：存储对象属性、购物车
+- List 操作：消息队列、最新列表
+- Set 操作：标签、关注关系
+- ZSet 操作：排行榜、延时队列
+
+**Redisson**（分布式高级功能）：
+- **分布式锁**：RLock（推荐用于跨服务资源竞争）
+- **分布式对象**：RMap、RList、RSet 等
+- **布隆过滤器**：RBloomFilter
+- **限流器**：RRateLimiter
+- **发布订阅**：RTopic
+
+### 序列化配置
+
+✅ **已配置 Jackson JSON 序列化**：
+- Key：String 序列化（可读性强）
+- Value：Jackson JSON 序列化（支持完整对象存储）
+- 支持 Java 8 时间类型（LocalDateTime、LocalDate 等）
+- **无需手动序列化，直接存储 POJO 对象**
+
+### RedisTemplate 使用规范
+
+**推荐写法：**
+```java
+@Autowired
+private RedisTemplate<String, Object> redisTemplate;
+
+// 或使用工具类
+@Autowired
+private RedisUtil redisUtil;
+
+// 1. 存储对象（自动 JSON 序列化）
+User user = new User(1L, "张三", "zhangsan@example.com");
+redisUtil.set("user:1", user, 3600);  // 缓存 1 小时
+
+// 2. 获取对象（类型安全）
+User cachedUser = redisUtil.get("user:1", User.class);
+
+// 3. 计数器
+redisUtil.increment("device:online:count");
+
+// 4. Hash 操作
+redisUtil.hSet("device:status", "device001", "online");
+String status = (String) redisUtil.hGet("device:status", "device001");
+
+// 5. 批量删除
+redisUtil.delete(Arrays.asList("key1", "key2", "key3"));
+```
+
+**禁止写法：**
+```java
+// ❌ 手动序列化（已配置 Jackson，无需手动）
+redisTemplate.opsForValue().set("user:1", JSON.toJSONString(user));
+
+// ❌ 使用 StringRedisTemplate 存储对象（会导致序列化问题）
+@Autowired
+private StringRedisTemplate stringRedisTemplate;
+```
+
+### Redisson 分布式锁规范
+
+**使用场景：** 跨服务/跨实例的资源竞争，如设备状态更新、配额检查、订单支付
 
 **推荐写法：**
 ```java
@@ -91,17 +154,25 @@ wrapper.apply("tenant_id = " + tenantId);
 private RedissonClient redissonClient;
 
 public void updateDeviceStatus(String deviceId) {
+    // 锁 Key 命名规范：业务域:锁类型:唯一标识
     String lockKey = "device:lock:" + deviceId;
     RLock lock = redissonClient.getLock(lockKey);
 
     try {
-        // 尝试获取锁，等待3秒，持有10秒
+        // 尝试获取锁：等待3秒，持有10秒
         if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
             // 业务逻辑
+            Device device = deviceMapper.selectById(deviceId);
+            device.setStatus("1");
+            deviceMapper.updateById(device);
         } else {
-            throw new BusinessException("获取锁失败");
+            throw new BusinessException("获取锁失败，请稍后重试");
         }
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new BusinessException("获取锁被中断", e);
     } finally {
+        // 必须在 finally 中释放锁，并检查是否持有锁
         if (lock.isHeldByCurrentThread()) {
             lock.unlock();
         }
@@ -110,10 +181,111 @@ public void updateDeviceStatus(String deviceId) {
 ```
 
 **注意事项：**
-- 锁 Key 命名：`业务域:锁类型:唯一标识`
-- 必须使用 `tryLock` 带超时，避免死锁
-- 必须在 `finally` 中释放锁
-- 优先使用 `tryLock` 而非 `lock`（避免阻塞过久）
+- ✅ 锁 Key 命名：`业务域:锁类型:唯一标识`（如 `device:lock:123`）
+- ✅ 必须使用 `tryLock(等待时间, 持有时间, 时间单位)`，避免死锁
+- ✅ 必须在 `finally` 中释放锁，并检查 `isHeldByCurrentThread()`
+- ✅ 优先使用 `tryLock` 而非 `lock`（避免阻塞过久）
+- ✅ 持有时间要合理，避免业务执行超时导致锁自动释放
+- ❌ 禁止使用 `synchronized` 或 `ReentrantLock`（单机锁，分布式环境无效）
+
+**常见锁类型：**
+```java
+// 1. 普通可重入锁
+RLock lock = redissonClient.getLock("device:lock:123");
+
+// 2. 公平锁（按请求顺序获取）
+RLock fairLock = redissonClient.getFairLock("device:fair:123");
+
+// 3. 读写锁（读多写少场景）
+RReadWriteLock rwLock = redissonClient.getReadWriteLock("device:rw:123");
+RLock readLock = rwLock.readLock();
+RLock writeLock = rwLock.writeLock();
+
+// 4. 联锁（同时锁定多个资源）
+RLock lock1 = redissonClient.getLock("lock1");
+RLock lock2 = redissonClient.getLock("lock2");
+RedissonMultiLock multiLock = new RedissonMultiLock(lock1, lock2);
+```
+
+### Redis Key 命名规范
+
+**格式：** `业务域:资源类型:唯一标识[:子资源]`
+
+**示例：**
+```java
+// 用户相关
+user:info:123               // 用户信息
+user:token:abc123           // 用户 Token
+user:permissions:123        // 用户权限列表
+
+// 设备相关
+device:info:device001       // 设备信息
+device:status:device001     // 设备状态
+device:lock:device001       // 设备分布式锁
+
+// 租户相关
+tenant:config:1             // 租户配置
+tenant:quota:1              // 租户配额
+
+// 统计相关
+stats:device:online:count   // 在线设备数
+stats:tenant:1:device:count // 租户设备数
+```
+
+### 缓存策略
+
+**缓存穿透防护：**
+```java
+// 缓存空值，设置较短过期时间
+if (user == null) {
+    redisUtil.set("user:123", new NullValue(), 60);  // 缓存 1 分钟
+}
+```
+
+**缓存击穿防护（使用 Redisson 锁）：**
+```java
+public User getUserWithCache(Long userId) {
+    String cacheKey = "user:" + userId;
+
+    // 1. 查询缓存
+    User user = redisUtil.get(cacheKey, User.class);
+    if (user != null) {
+        return user;
+    }
+
+    // 2. 获取分布式锁，防止缓存击穿
+    RLock lock = redissonClient.getLock("lock:user:cache:" + userId);
+    try {
+        if (lock.tryLock(3, 10, TimeUnit.SECONDS)) {
+            // 3. 再次检查缓存（Double Check）
+            user = redisUtil.get(cacheKey, User.class);
+            if (user != null) {
+                return user;
+            }
+
+            // 4. 查询数据库
+            user = userMapper.selectById(userId);
+
+            // 5. 写入缓存
+            if (user != null) {
+                redisUtil.set(cacheKey, user, 3600);  // 缓存 1 小时
+            }
+
+            return user;
+        }
+    } finally {
+        if (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+        }
+    }
+
+    return null;
+}
+```
+
+---
+
+## 分布式规范
 
 ### 分布式事务（Seata AT 模式）
 

@@ -10,6 +10,18 @@ import java.util.concurrent.TimeUnit;
 /**
  * Redis 工具类
  * 封装常用的 Redis 操作
+ *
+ * <p><b>使用场景：</b>简单的缓存操作，复杂场景直接注入 RedisTemplate
+ *
+ * <p><b>序列化说明：</b>
+ * <ul>
+ *   <li>Key 使用 String 序列化</li>
+ *   <li>Value 使用 Jackson JSON 序列化，支持完整对象存储</li>
+ *   <li>可直接存储 POJO 对象，无需手动序列化</li>
+ * </ul>
+ *
+ * @author OpenIoT Team
+ * @since 1.0.0
  */
 @Component
 @RequiredArgsConstructor
@@ -89,9 +101,29 @@ public class RedisUtil {
 
     /**
      * 获取值
+     *
+     * @param key 键
+     * @return 值对象（需自行类型转换）
      */
     public Object get(String key) {
         return redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 获取值（类型安全）
+     *
+     * @param key   键
+     * @param clazz 值类型
+     * @param <T>   泛型类型
+     * @return 值对象，不存在或类型不匹配返回 null
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T get(String key, Class<T> clazz) {
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value != null && clazz.isInstance(value)) {
+            return (T) value;
+        }
+        return null;
     }
 
     /**
