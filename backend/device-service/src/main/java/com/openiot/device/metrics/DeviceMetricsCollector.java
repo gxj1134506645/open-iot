@@ -3,7 +3,7 @@ package com.openiot.device.metrics;
 import com.openiot.common.observability.metrics.BusinessMetrics;
 import com.openiot.device.entity.Device;
 import com.openiot.device.mapper.DeviceMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -103,10 +103,10 @@ public class DeviceMetricsCollector {
     @Scheduled(fixedRate = 30000)
     public void updateDeviceMetrics() {
         try {
-            // 使用 MyBatis Plus 的查询
+            // 使用 MyBatis Plus Lambda 查询
             long total = deviceMapper.selectCount(null);
             long online = deviceMapper.selectCount(
-                    new QueryWrapper<Device>().eq("status", 1)
+                    new LambdaQueryWrapper<Device>().eq(Device::getStatus, "1")
             );
 
             totalDevices.set(total);

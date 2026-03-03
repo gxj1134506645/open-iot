@@ -1,5 +1,7 @@
 package com.openiot.device.config;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.openiot.device.entity.Device;
 import com.openiot.device.mapper.DeviceMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,12 +76,12 @@ public class HealthCheckConfig {
         @Override
         public Health health() {
             try {
-                // 使用 MyBatis Plus 查询
+                // 使用 MyBatis Plus Lambda 查询
                 long totalDevices = deviceMapper.selectCount(null);
-                // 查询在线设备数 (status = 1 表示在线)
+                // 查询在线设备数 (status = '1' 表示在线)
                 long onlineDevices = deviceMapper.selectCount(
-                    new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.openiot.device.entity.Device>()
-                        .eq("status", 1)
+                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.openiot.device.entity.Device>()
+                        .eq(com.openiot.device.entity.Device::getStatus, "1")
                 );
                 double onlineRate = totalDevices > 0 ? (double) onlineDevices / totalDevices * 100 : 0;
 
