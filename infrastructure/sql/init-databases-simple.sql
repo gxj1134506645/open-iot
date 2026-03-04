@@ -1,14 +1,13 @@
 -- ========================================
--- Open-IoT 独立数据库初始化脚本
+-- Open-IoT 独立数据库初始化脚本（精简版）
 -- Version: 1.0.1
--- Description: 为每个微服务创建独立数据库（健壮版）
+-- Description: 为每个微服务创建独立数据库
 -- ========================================
 
 -- ========================================
 -- 1. 创建数据库
 -- ========================================
 
--- 租户服务数据库
 CREATE DATABASE openiot_tenant
     ENCODING = 'UTF8'
     LC_COLLATE = 'en_US.utf8'
@@ -16,7 +15,6 @@ CREATE DATABASE openiot_tenant
 
 COMMENT ON DATABASE openiot_tenant IS '租户服务数据库';
 
--- 设备服务数据库
 CREATE DATABASE openiot_device
     ENCODING = 'UTF8'
     LC_COLLATE = 'en_US.utf8'
@@ -24,7 +22,6 @@ CREATE DATABASE openiot_device
 
 COMMENT ON DATABASE openiot_device IS '设备服务数据库';
 
--- 数据服务数据库
 CREATE DATABASE openiot_data
     ENCODING = 'UTF8'
     LC_COLLATE = 'en_US.utf8'
@@ -32,7 +29,6 @@ CREATE DATABASE openiot_data
 
 COMMENT ON DATABASE openiot_data IS '数据服务数据库';
 
--- 连接服务数据库
 CREATE DATABASE openiot_connect
     ENCODING = 'UTF8'
     LC_COLLATE = 'en_US.utf8'
@@ -44,16 +40,12 @@ COMMENT ON DATABASE openiot_connect IS '连接服务数据库';
 -- 2. 创建用户（如果不存在）或更新密码
 -- ========================================
 
--- 方式 1：使用 DO 块处理用户创建/更新
 DO $$
 BEGIN
-    -- 检查用户是否存在
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'openiot') THEN
-        -- 用户不存在，创建用户
         CREATE USER openiot WITH PASSWORD 'openiot123';
         RAISE NOTICE '用户 openiot 已创建';
     ELSE
-        -- 用户已存在，更新密码
         ALTER USER openiot WITH PASSWORD 'openiot123';
         RAISE NOTICE '用户 openiot 已存在，密码已更新';
     END IF;
@@ -70,9 +62,9 @@ GRANT ALL PRIVILEGES ON DATABASE openiot_data TO openiot;
 GRANT ALL PRIVILEGES ON DATABASE openiot_connect TO openiot;
 
 -- ========================================
--- 4. Schema 权限授权（必须执行！）
+-- 4. Schema 权限授权
 -- ========================================
--- ⚠️ 重要：以下语句需要复制并在每个数据库中单独执行
+-- ⚠️ 重要：必须在每个数据库中执行以下授权语句
 -- Flyway 和应用程序需要 Schema 权限才能创建表和读写数据
 
 -- \connect openiot_tenant
@@ -98,28 +90,10 @@ GRANT ALL PRIVILEGES ON DATABASE openiot_connect TO openiot;
 -- ========================================
 -- 执行说明
 -- ========================================
--- 此脚本需要手动执行，不会被服务自动触发！
---
--- 执行方式：
--- 1. 以超级用户（postgres）身份执行此脚本
---    psql -U postgres -f init-databases.sql
+-- 1. 执行此脚本（以 postgres 用户）
+--    psql -U postgres -f init-databases-simple.sql
 --
 -- 2. 执行 Schema 授权（复制上面的语句在每个数据库中执行）
---    psql -U postgres
---    \connect openiot_tenant
---    GRANT ALL ON SCHEMA public TO openiot;
---    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO openiot;
---    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO openiot;
---    （重复其他 3 个数据库）
 --
 -- 3. 验证
 --    psql -U openiot -d openiot_tenant -c "SELECT current_database(), current_user;"
---    预期输出：
---     current_database  | current_user
---    --------------------+----------------
---     openiot_tenant     | openiot
---    (1 row)
---
--- 4. 启动服务（Flyway 自动创建表）
---    cd backend/tenant-service
---    mvn spring-boot:run
