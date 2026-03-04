@@ -1,42 +1,46 @@
 -- ========================================
 -- Open-IoT 独立数据库初始化脚本
--- Version: 1.0.1
--- Description: 为每个微服务创建独立数据库（健壮版）
+-- Version: 1.0.2
+-- Description: 为每个微服务创建独立数据库（幂等版）
 -- ========================================
 
 -- ========================================
--- 1. 创建数据库
+-- 1. 创建数据库（不存在才创建）
 -- ========================================
 
 -- 租户服务数据库
-CREATE DATABASE openiot_tenant
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.utf8'
-    LC_CTYPE = 'en_US.utf8';
+SELECT 'CREATE DATABASE openiot_tenant
+    ENCODING = ''UTF8''
+    LC_COLLATE = ''en_US.utf8''
+    LC_CTYPE = ''en_US.utf8'''
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'openiot_tenant')\gexec
 
 COMMENT ON DATABASE openiot_tenant IS '租户服务数据库';
 
 -- 设备服务数据库
-CREATE DATABASE openiot_device
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.utf8'
-    LC_CTYPE = 'en_US.utf8';
+SELECT 'CREATE DATABASE openiot_device
+    ENCODING = ''UTF8''
+    LC_COLLATE = ''en_US.utf8''
+    LC_CTYPE = ''en_US.utf8'''
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'openiot_device')\gexec
 
 COMMENT ON DATABASE openiot_device IS '设备服务数据库';
 
 -- 数据服务数据库
-CREATE DATABASE openiot_data
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.utf8'
-    LC_CTYPE = 'en_US.utf8';
+SELECT 'CREATE DATABASE openiot_data
+    ENCODING = ''UTF8''
+    LC_COLLATE = ''en_US.utf8''
+    LC_CTYPE = ''en_US.utf8'''
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'openiot_data')\gexec
 
 COMMENT ON DATABASE openiot_data IS '数据服务数据库';
 
 -- 连接服务数据库
-CREATE DATABASE openiot_connect
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.utf8'
-    LC_CTYPE = 'en_US.utf8';
+SELECT 'CREATE DATABASE openiot_connect
+    ENCODING = ''UTF8''
+    LC_COLLATE = ''en_US.utf8''
+    LC_CTYPE = ''en_US.utf8'''
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'openiot_connect')\gexec
 
 COMMENT ON DATABASE openiot_connect IS '连接服务数据库';
 
@@ -44,7 +48,6 @@ COMMENT ON DATABASE openiot_connect IS '连接服务数据库';
 -- 2. 创建用户（如果不存在）或更新密码
 -- ========================================
 
--- 方式 1：使用 DO 块处理用户创建/更新
 DO $$
 BEGIN
     -- 检查用户是否存在
