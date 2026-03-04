@@ -213,7 +213,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "openiot_device_online_count / openiot_device_total_count",
+          "expr": "openiot_device_online_count / clamp_min(openiot_device_total_count, 1)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -786,7 +786,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "openiot_tenant_total_count",
+          "expr": "openiot_tenant_total_count or vector(0)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -845,7 +845,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "openiot_tenant_active_count",
+          "expr": "openiot_tenant_active_count or vector(0)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -904,7 +904,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "openiot_user_total_count",
+          "expr": "openiot_user_total_count or vector(0)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"

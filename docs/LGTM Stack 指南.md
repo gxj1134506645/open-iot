@@ -11,6 +11,7 @@
 - [数据流转过程](#数据流转过程)
 - [实际应用场景](#实际应用场景)
 - [Open-IoT 项目配置](#open-iot-项目配置)
+  - [Open-IoT 指标实现与代码映射](#open-iot-指标实现与代码映射)
 - [最佳实践](#最佳实践)
 
 ---
@@ -561,6 +562,90 @@ openiot:
       tenant-mdc: true
       sensitive-data-masking: true
 ```
+
+---
+
+### Open-IoT 指标实现与代码映射
+
+这一节用于澄清几个常见问题：
+- BusinessMetrics 里的指标是不是“系统自带”？
+- Micrometer 和 Prometheus 分别做什么？
+- Grafana 面板上的值是从哪些后端代码来的？
+
+#### 1. 指标是“内建”还是“自定义”？
+
+两者都有：
+
+- **内建指标（框架自动提供）**
+  - 例如：`jvm_memory_used_bytes`、`jvm_gc_pause_seconds_*`、`http_server_requests_seconds_*`、`hikaricp_*`
+  - 由 Spring Boot Actuator + Micrometer 自动暴露
+
+- **自定义业务指标（项目代码定义）**
+  - 例如：`openiot_device_total_count`、`openiot_device_online_count`
+  - 例如：`openiot_message_received_total`、`openiot_message_processed_total`、`openiot_message_failed_total`
+  - 由你们在代码中通过 `Counter/Gauge/Timer` 主动注册
+
+> 注意：Micrometer 在代码中常用点号命名（如 `openiot.device.online.count`），
+> 在 Prometheus 暴露时会转换为下划线风格（如 `openiot_device_online_count`）。
+
+#### 2. Micrometer 与 Prometheus 的关系
+
+可以把它们理解为“埋点标准层 + 指标后端”：
+
+1. **Micrometer**：应用内埋点标准层（Java SDK/门面）
+   - 负责注册与维护指标对象（Counter/Gauge/Timer）
+2. **Actuator `/actuator/prometheus`**：导出端点
+   - 将 Micrometer 中的指标按 Prometheus 文本格式输出
+3. **Prometheus**：采集与存储系统
+   - 定时 Pull 各服务 `/actuator/prometheus`
+   - 存储到 TSDB，支持 PromQL 查询
+4. **Grafana**：展示层
+   - 用 PromQL 查询 Prometheus 中的数据并可视化
+
+#### 3. 代码关系：BusinessMetrics 与各 Collector
+
+- `BusinessMetrics`
+  - 文件：`backend/common/common-observability/.../BusinessMetrics.java`
+  - 作用：公共业务指标封装（openiot 业务域）
+
+- `DeviceMetricsCollector`
+  - 文件：`backend/device-service/.../DeviceMetricsCollector.java`
+  - 作用：设备服务侧采集器
+  - 与 `BusinessMetrics` 关系：调用 `setOnlineDevices`、`recordDeviceConnected`、`recordDeviceDisconnected`
+
+- `MessageMetricsCollector`
+  - 文件：`backend/data-service/.../MessageMetricsCollector.java`
+  - 作用：消息处理指标采集器
+  - 与 `BusinessMetrics` 关系：调用 `recordMessageReceived/Processed/Failed`
+
+- `KafkaLagMetrics`
+  - 文件：`backend/data-service/.../KafkaLagMetrics.java`
+  - 作用：Kafka 消费积压/消费者组成员采集
+  - 与 `BusinessMetrics` 关系：**平行关系**，独立注册 Kafka 指标，不依赖 `BusinessMetrics`
+
+#### 4. Business Metrics 面板与后端指标映射（关键项）
+
+- **设备总数**：`openiot_device_total_count`
+- **在线设备**：`openiot_device_online_count`
+- **设备在线率**：`openiot_device_online_count / openiot_device_total_count`
+- **离线设备**：`openiot_device_total_count - openiot_device_online_count`
+- **消息处理速率**：
+  - `rate(openiot_message_received_total[5m])`
+  - `rate(openiot_message_processed_total[5m])`
+  - `rate(openiot_message_failed_total[5m])`
+- **Kafka 消费积压**：`kafka_consumer_group_lag{service="data-service"}`
+- **消费者组成员数**：`kafka_consumer_group_members{service="data-service"}`
+
+#### 5. 为什么会出现 0、No data、NaN？
+
+- **0**：链路正常，但当前没有业务流量（没有设备连接/消息输入）
+- **No data**：查询时间窗口内确实没有样本点
+- **NaN**：表达式结果不可计算（常见是在线率分母为 0：`0/0`）
+
+工程建议：
+- 在线率表达式可改为防除零写法，例如：
+  - `openiot_device_online_count / clamp_min(openiot_device_total_count, 1)`
+  - 或使用条件表达式在总数为 0 时显示 0
 
 ---
 

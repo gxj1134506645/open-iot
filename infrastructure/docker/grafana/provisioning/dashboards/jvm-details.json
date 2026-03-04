@@ -1183,7 +1183,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "hikaricp_connections_creation_seconds_sum{service=\"$service\"} / hikaricp_connections_creation_seconds_count{service=\"$service\"}",
+          "expr": "hikaricp_connections_creation_seconds_sum{service=\"$service\"} / clamp_min(hikaricp_connections_creation_seconds_count{service=\"$service\"}, 1)",
           "legendFormat": "creation time",
           "range": true,
           "refId": "A"
@@ -1194,7 +1194,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "hikaricp_connections_usage_seconds_sum{service=\"$service\"} / hikaricp_connections_usage_seconds_count{service=\"$service\"}",
+          "expr": "hikaricp_connections_usage_seconds_sum{service=\"$service\"} / clamp_min(hikaricp_connections_usage_seconds_count{service=\"$service\"}, 1)",
           "legendFormat": "usage time",
           "range": true,
           "refId": "B"
