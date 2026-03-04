@@ -7,6 +7,9 @@ services:
     environment:
       - MODE=standalone
       - PREFER_HOST_MODE=hostname
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info,metrics,prometheus
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
     ports:
       - "8848:8848"
       - "9848:9848"

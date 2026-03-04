@@ -26,29 +26,6 @@ alerting:
 # 抓取配置
 scrape_configs:
   # ========================================
-  # OpenIoT 微服务
-  # ========================================
-  - job_name: 'openiot-services'
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 15s
-    scrape_timeout: 10s
-    static_configs:
-      - targets:
-          - 'gateway-service:8080'
-          - 'tenant-service:8081'
-          - 'device-service:8082'
-          - 'data-service:8083'
-          - 'connect-service:8084'
-        labels:
-          group: 'openiot'
-    relabel_configs:
-      # 从 target 中提取服务名
-      - source_labels: [__address__]
-        regex: '([^:]+):\d+'
-        target_label: service
-        replacement: '${1}'
-
-  # ========================================
   # Prometheus 自身监控
   # ========================================
   - job_name: 'prometheus'
@@ -84,7 +61,7 @@ scrape_configs:
   #     - targets: ['kafka-exporter:9308']
 
   # ========================================
-  # Spring Boot Actuator (备用 - 直接抓取)
+  # Spring Boot Actuator (本地开发环境抓取)
   # ========================================
   - job_name: 'spring-boot-services'
     metrics_path: '/actuator/prometheus'

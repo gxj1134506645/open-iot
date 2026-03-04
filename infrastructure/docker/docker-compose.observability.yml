@@ -13,6 +13,8 @@ services:
   prometheus:
     image: prom/prometheus:v2.48.0
     container_name: openiot-prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "9090:9090"
     volumes:

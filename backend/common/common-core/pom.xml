@@ -49,14 +49,10 @@
             <artifactId>sa-token-spring-boot3-starter</artifactId>
         </dependency>
 
-        <!-- Micrometer Tracing (链路追踪) -->
+        <!-- Micrometer Tracing API (仅接口，具体实现由 common-observability 提供 OTel Bridge) -->
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-tracing-bridge-brave</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.zipkin.reporter2</groupId>
-            <artifactId>zipkin-reporter-brave</artifactId>
+            <artifactId>micrometer-tracing</artifactId>
         </dependency>
 
         <!-- Spring Boot Actuator -->

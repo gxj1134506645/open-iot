@@ -90,6 +90,8 @@ management:
 
 # 可观测性配置（公共）
 openiot:
+  security:
+    auth-enabled: true
   observability:
     tracing:
       enabled: true
