@@ -1,6 +1,5 @@
 package com.openiot.connect;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -8,7 +7,15 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  * 设备接入服务启动类
- * 排除数据库自动配置（connect-service 不需要数据库）
+ *
+ * 职责：
+ * 1. 维护设备长连接（Netty TCP Server）
+ * 2. 解析私有协议（MQTT/CoAP/自定义二进制）
+ * 3. 验证设备 Token（从 Redis 快速验证，不查数据库）
+ * 4. 转发数据到 Kafka（由 data-service 消费并存储）
+ *
+ * 不访问数据库，数据持久化由 data-service 负责
+ * 设备 Token 由 device-service 在设备注册时写入 Redis
  */
 @SpringBootApplication(exclude = {
         DataSourceAutoConfiguration.class

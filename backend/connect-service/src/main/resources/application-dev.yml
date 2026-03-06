@@ -1,0 +1,61 @@
+server:
+  port: 8082
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # 连接服务数据库（独立数据库）
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/openiot_connect
+    username: openiot
+    password: openiot123
+
+  # 开发环境 Redis
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: openiot123
+      database: 0
+
+  # 开发环境 Kafka
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+
+# 开发环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: DEBUG
+    com.openiot.connect: DEBUG
+    io.netty: INFO
+    org.springframework.kafka: INFO
+
+# Netty 开发环境配置
+netty:
+  port: 8888
+  boss-threads: 1
+  worker-threads: 0
+  so-backlog: 2048
+  connect-timeout: 30000
+  reader-idle-time: 120
+  writer-idle-time: 120
+  all-idle-time: 300
+
+# 可观测性配置（开发环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 1.0  # 100% 采样
+      otlp-endpoint: http://localhost:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: false  # 开发环境不脱敏
+    metrics:
+      business-enabled: true
+      netty-enabled: true
+      redis-enabled: true
+      kafka-enabled: true

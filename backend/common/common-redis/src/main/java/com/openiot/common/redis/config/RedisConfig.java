@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,6 +33,34 @@ import java.time.Duration;
 /**
  * Redis 自动配置类
  * 配置 RedisTemplate 序列化方式和连接池
+ *
+ * <p><b>Redis 使用规范：</b>
+ * <ul>
+ *   <li><b>简单缓存操作</b>：使用 RedisTemplate（本类配置）
+ *     <ul>
+ *       <li>String 操作：缓存对象、计数器</li>
+ *       <li>Hash 操作：存储对象属性</li>
+ *       <li>List/Set/ZSet 操作：队列、集合、排行榜</li>
+ *     </ul>
+ *   </li>
+ *   <li><b>分布式高级功能</b>：使用 Redisson（见 {@link RedissonConfig}）
+ *     <ul>
+ *       <li>分布式锁：RLock</li>
+ *       <li>分布式对象：RMap、RList 等</li>
+ *       <li>布隆过滤器、限流器等</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * <p><b>序列化配置：</b>
+ * <ul>
+ *   <li>Key：String 序列化（可读性强）</li>
+ *   <li>Value：Jackson JSON 序列化（支持复杂对象）</li>
+ *   <li>支持 Java 8 时间类型（LocalDateTime、LocalDate 等）</li>
+ * </ul>
+ *
+ * @author OpenIoT Team
+ * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnClass(RedisTemplate.class)
@@ -43,9 +72,10 @@ public class RedisConfig {
     private final RedisProperties redisProperties;
     private final RedisPoolProperties poolProperties;
 
-    public RedisConfig(RedisProperties redisProperties, RedisPoolProperties poolProperties) {
+    public RedisConfig(RedisProperties redisProperties,
+                       ObjectProvider<RedisPoolProperties> poolPropertiesProvider) {
         this.redisProperties = redisProperties;
-        this.poolProperties = poolProperties;
+        this.poolProperties = poolPropertiesProvider.getIfUnique(RedisPoolProperties::new);
     }
 
     /**

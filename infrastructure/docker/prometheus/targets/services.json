@@ -1,0 +1,37 @@
+[
+  {
+    "targets": ["host.docker.internal:8080"],
+    "labels": {
+      "service": "gateway-service",
+      "__metrics_path__": "/actuator/prometheus"
+    }
+  },
+  {
+    "targets": ["host.docker.internal:8086"],
+    "labels": {
+      "service": "tenant-service",
+      "__metrics_path__": "/actuator/prometheus"
+    }
+  },
+  {
+    "targets": ["host.docker.internal:8081"],
+    "labels": {
+      "service": "device-service",
+      "__metrics_path__": "/actuator/prometheus"
+    }
+  },
+  {
+    "targets": ["host.docker.internal:8085"],
+    "labels": {
+      "service": "data-service",
+      "__metrics_path__": "/actuator/prometheus"
+    }
+  },
+  {
+    "targets": ["host.docker.internal:8082"],
+    "labels": {
+      "service": "connect-service",
+      "__metrics_path__": "/actuator/prometheus"
+    }
+  }
+]

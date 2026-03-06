@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # 生产环境 Redis
+  data:
+    redis:
+      host: ${REDIS_HOST:prod-redis.internal}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 2
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+
+# 生产环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: INFO
+    org.springframework.cloud.gateway: INFO
+    org.springframework.web: INFO
+
+# Sa-Token 生产环境配置
+sa-token:
+  is-log: false
+  timeout: 86400  # 24小时
+  token-style: uuid
+
+# 可观测性配置（生产环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 0.1  # 10% 采样
+      otlp-endpoint: http://${OTEL_HOST:prod-otel-collector}:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: true  # 生产环境必须脱敏
+    metrics:
+      business-enabled: true
+      redis-enabled: true

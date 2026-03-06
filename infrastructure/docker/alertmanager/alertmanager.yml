@@ -1,0 +1,185 @@
+# ========================================
+# Open-IoT Alertmanager 配置
+# ========================================
+
+global:
+  # SMTP 配置 (邮件通知)
+  smtp_smarthost: "${SMTP_HOST}:${SMTP_PORT}"
+  smtp_from: "${SMTP_FROM}"
+  smtp_auth_username: "${SMTP_USERNAME}"
+  smtp_auth_password: "${SMTP_PASSWORD}"
+  smtp_require_tls: true
+
+  # Slack 配置 (可选)
+  # slack_api_url: "${SLACK_WEBHOOK_URL}"
+
+  # 默认解决时间
+  resolve_timeout: 5m
+
+# 告警模板
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# 告警路由配置
+route:
+  # 默认接收者
+  receiver: 'default-receiver'
+
+  # 分组等待时间
+  group_wait: 30s
+
+  # 同组告警间隔
+  group_interval: 5m
+
+  # 重复告警间隔
+  repeat_interval: 4h
+
+  # 分组标签
+  group_by: ['alertname', 'severity', 'service']
+
+  # 子路由配置
+  routes:
+    # 严重告警 - 立即通知
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+
+    # 警告告警 - 汇总通知
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 5m
+      repeat_interval: 4h
+
+    # 可用性告警
+    - match:
+        category: availability
+      receiver: 'availability-alerts'
+      group_by: ['alertname', 'service']
+
+    # 性能告警
+    - match:
+        category: performance
+      receiver: 'performance-alerts'
+      group_by: ['alertname', 'service']
+
+    # Kafka 消息告警
+    - match:
+        category: messaging
+      receiver: 'messaging-alerts'
+      group_by: ['alertname', 'group']
+
+    # 业务告警
+    - match:
+        category: business
+      receiver: 'business-alerts'
+      group_by: ['alertname']
+
+# 接收者配置
+receivers:
+  # 默认接收者
+  - name: 'default-receiver'
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/webhook'
+        send_resolved: true
+
+  # 严重告警接收者
+  - name: 'critical-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL_CRITICAL}'
+        send_resolved: true
+        html: |
+          <h2>🚨 严重告警</h2>
+          <p><strong>告警名称:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>服务:</strong> {{ .GroupLabels.service }}</p>
+          <p><strong>详情:</strong></p>
+          {{ range .Alerts }}
+          <ul>
+            <li>描述: {{ .Annotations.description }}</li>
+            <li>开始时间: {{ .StartsAt }}</li>
+          </ul>
+          {{ end }}
+    # Slack 通知 (如果配置)
+    # slack_configs:
+    #   - channel: '#alerts-critical'
+    #     send_resolved: true
+    #     title: '🚨 严重告警: {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/critical'
+        send_resolved: true
+
+  # 警告告警接收者
+  - name: 'warning-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL_WARNING}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/warning'
+        send_resolved: true
+
+  # 可用性告警接收者
+  - name: 'availability-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL_OPS}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/availability'
+        send_resolved: true
+
+  # 性能告警接收者
+  - name: 'performance-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL_OPS}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/performance'
+        send_resolved: true
+
+  # 消息系统告警接收者
+  - name: 'messaging-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL_OPS}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/messaging'
+        send_resolved: true
+
+  # 业务告警接收者
+  - name: 'business-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL_BUSINESS}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://gateway-service:8080/api/v1/alerts/business'
+        send_resolved: true
+
+# 静默规则 (示例)
+# inhibitions:
+#   # 当服务宕机时，抑制该服务的其他告警
+#   - source_match:
+#       alertname: 'ServiceDown'
+#       severity: 'critical'
+#     target_match:
+#       severity: 'warning'
+#     equal: ['service']
+#
+#   # 当集群整体故障时，抑制节点级别的告警
+#   - source_match:
+#       alertname: 'ClusterDown'
+#     target_match:
+#       alertname: 'ServiceDown'
+#     equal: ['cluster']
+
+# 告警静默配置 (通过 API 动态管理)
+# silences:
+#   - matchers:
+#       - alertname = "ServiceDown"
+#       - service = "connect-service"
+#     starts_at: "2024-01-01T00:00:00Z"
+#     ends_at: "2024-01-01T02:00:00Z"
+#     created_by: "admin@openiot.io"
+#     comment: "计划维护窗口"

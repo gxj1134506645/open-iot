@@ -49,51 +49,51 @@
 
 ### 2.1 公共模块
 
-- [ ] T009 创建 common-core 模块 backend/common/common-core/pom.xml
-- [ ] T010 [P] 创建 ApiResponse 统一响应类 backend/common/common-core/src/main/java/com/openiot/common/core/result/ApiResponse.java
-- [ ] T011 [P] 创建全局异常处理器 backend/common/common-core/src/main/java/com/openiot/common/core/exception/GlobalExceptionHandler.java
-- [ ] T012 [P] 创建业务异常类 backend/common/common-core/src/main/java/com/openiot/common/core/exception/BusinessException.java
+- [x] T009 创建 common-core 模块 backend/common/common-core/pom.xml
+- [x] T010 [P] 创建 ApiResponse 统一响应类 backend/common/common-core/src/main/java/com/openiot/common/core/result/ApiResponse.java
+- [x] T011 [P] 创建全局异常处理器 backend/common/common-core/src/main/java/com/openiot/common/core/exception/GlobalExceptionHandler.java
+- [x] T012 [P] 创建业务异常类 backend/common/common-core/src/main/java/com/openiot/common/core/exception/BusinessException.java
 
 ### 2.2 Redis 配置
 
-- [ ] T013 创建 common-redis 模块 backend/common/common-redis/pom.xml
-- [ ] T014 创建 Redis 配置类 backend/common/common-redis/src/main/java/com/openiot/common/redis/config/RedisConfig.java
-- [ ] T015 创建 Redis 工具类 backend/common/common-redis/src/main/java/com/openiot/common/redis/util/RedisUtil.java
+- [x] T013 创建 common-redis 模块 backend/common/common-redis/pom.xml
+- [x] T014 创建 Redis 配置类 backend/common/common-redis/src/main/java/com/openiot/common/redis/config/RedisConfig.java
+- [x] T015 创建 Redis 工具类 backend/common/common-redis/src/main/java/com/openiot/common/redis/util/RedisUtil.java
 
 ### 2.3 Kafka 配置
 
-- [ ] T016 创建 common-kafka 模块 backend/common/common-kafka/pom.xml
-- [ ] T017 创建 EventEnvelope 事件模型 backend/common/common-kafka/src/main/java/com/openiot/common/kafka/model/EventEnvelope.java
-- [ ] T018 创建 Kafka 配置类 backend/common/common-kafka/src/main/java/com/openiot/common/kafka/config/KafkaConfig.java
+- [x] T016 创建 common-kafka 模块 backend/common/common-kafka/pom.xml
+- [x] T017 创建 EventEnvelope 事件模型 backend/common/common-kafka/src/main/java/com/openiot/common/kafka/model/EventEnvelope.java
+- [x] T018 创建 Kafka 配置类 backend/common/common-kafka/src/main/java/com/openiot/common/kafka/config/KafkaConfig.java
 
 ### 2.4 MongoDB 配置
 
-- [ ] T019 创建 common-mongodb 模块 backend/common/common-mongodb/pom.xml
-- [ ] T020 创建 RawEvent 文档模型 backend/common/common-mongodb/src/main/java/com/openiot/common/mongodb/document/RawEventDocument.java
-- [ ] T021 创建 DeadLetter 文档模型 backend/common/common-mongodb/src/main/java/com/openiot/common/mongodb/document/DeadLetterDocument.java
-- [ ] T022 创建 MongoDB 配置类 backend/common/common-mongodb/src/main/java/com/openiot/common/mongodb/config/MongoConfig.java
+- [x] T019 创建 common-mongodb 模块 backend/common/common-mongodb/pom.xml
+- [x] T020 创建 RawEvent 文档模型 backend/common/common-mongodb/src/main/java/com/openiot/common/mongodb/document/RawEventDocument.java
+- [x] T021 创建 DeadLetter 文档模型 backend/common/common-mongodb/src/main/java/com/openiot/common/mongodb/document/DeadLetterDocument.java
+- [x] T022 创建 MongoDB 配置类 backend/common/common-mongodb/src/main/java/com/openiot/common/mongodb/config/MongoConfig.java
 
 ### 2.5 安全认证模块
 
-- [ ] T023 创建 common-security 模块 backend/common/common-security/pom.xml
-- [ ] T024 创建 Sa-Token 配置类 backend/common/common-security/src/main/java/com/openiot/common/security/config/SaTokenConfig.java
-- [ ] T025 创建 StpInterface 实现类（权限校验） backend/common/common-security/src/main/java/com/openiot/common/security/service/StpInterfaceImpl.java
-- [ ] T026 创建 TenantContext 租户上下文 backend/common/common-security/src/main/java/com/openiot/common/security/context/TenantContext.java
+- [x] T023 创建 common-security 模块 backend/common/common-security/pom.xml
+- [x] T024 创建 Sa-Token 配置类 backend/common/common-security/src/main/java/com/openiot/common/security/config/SaTokenConfig.java
+- [x] T025 创建 StpInterface 实现类（权限校验） backend/common/common-security/src/main/java/com/openiot/common/security/service/StpInterfaceImpl.java
+- [x] T026 创建 TenantContext 租户上下文 backend/common/common-security/src/main/java/com/openiot/common/security/context/TenantContext.java
 
 ### 2.6 数据库 Schema
 
-- [ ] T027 创建 Flyway 迁移脚本 V1.0.0__init_schema.sql (tenant, device, device_trajectory, sys_user 表)
-- [ ] T028 [P] 创建 Flyway 迁移脚本 V1.0.1__init_data.sql (初始化平台管理员数据)
+- [x] T027 创建 Flyway 迁移脚本 V1.0.0__init_schema.sql (tenant, device, device_trajectory, sys_user 表)
+- [x] T028 [P] 创建 Flyway 迁移脚本 V1.0.1__init_data.sql (初始化平台管理员数据)
 
 ### 2.7 网关服务骨架
 
-- [ ] T029 创建 gateway-service 模块 backend/gateway-service/pom.xml
-- [ ] T030 创建网关启动类 backend/gateway-service/src/main/java/com/openiot/gateway/GatewayApplication.java
-- [ ] T031 创建网关配置文件 backend/gateway-service/src/main/resources/application.yml (Nacos, 路由规则)
-- [ ] T032 创建网关路由配置类 backend/gateway-service/src/main/java/com/openiot/gateway/config/RouteConfig.java
-- [ ] T033 创建认证过滤器 backend/gateway-service/src/main/java/com/openiot/gateway/filter/AuthGlobalFilter.java
-- [ ] T034 创建访问日志过滤器 backend/gateway-service/src/main/java/com/openiot/gateway/filter/AccessLogFilter.java
-- [ ] T035 创建全局异常处理器 backend/gateway-service/src/main/java/com/openiot/gateway/handler/GlobalExceptionHandler.java
+- [x] T029 创建 gateway-service 模块 backend/gateway-service/pom.xml
+- [x] T030 创建网关启动类 backend/gateway-service/src/main/java/com/openiot/gateway/GatewayApplication.java
+- [x] T031 创建网关配置文件 backend/gateway-service/src/main/resources/application.yml (Nacos, 路由规则)
+- [x] T032 创建网关路由配置类 backend/gateway-service/src/main/java/com/openiot/gateway/config/RouteConfig.java
+- [x] T033 创建认证过滤器 backend/gateway-service/src/main/java/com/openiot/gateway/filter/AuthGlobalFilter.java
+- [x] T034 创建访问日志过滤器 backend/gateway-service/src/main/java/com/openiot/gateway/filter/AccessLogFilter.java
+- [x] T035 创建全局异常处理器 backend/gateway-service/src/main/java/com/openiot/gateway/handler/GlobalExceptionHandler.java
 
 **Checkpoint**: ✅ 基础设施就绪 - 用户故事开发可以并行开始
 
@@ -107,11 +107,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T036 [US5] 配置 Nacos 服务发现 backend/gateway-service/src/main/resources/bootstrap.yml
-- [ ] T037 [US5] 创建健康检查端点 backend/gateway-service/src/main/java/com/openiot/gateway/controller/HealthController.java
-- [ ] T038 [US5] 创建动态路由刷新接口 backend/gateway-service/src/main/java/com/openiot/gateway/controller/RouteController.java
-- [ ] T039 [US5] 验证 Nacos 控制台服务注册状态
-- [ ] T040 [US5] 验证网关路由转发功能
+- [x] T036 [US5] 配置 Nacos 服务发现 backend/gateway-service/src/main/resources/bootstrap.yml
+- [x] T037 [US5] 创建健康检查端点 backend/gateway-service/src/main/java/com/openiot/gateway/controller/HealthController.java
+- [x] T038 [US5] 创建动态路由刷新接口 backend/gateway-service/src/main/java/com/openiot/gateway/controller/RouteController.java
+- [x] T039 [US5] 验证 Nacos 控制台服务注册状态
+- [x] T040 [US5] 验证网关路由转发功能
 
 ---
 
@@ -125,23 +125,23 @@
 
 #### 租户服务
 
-- [ ] T041 [US4] 创建 tenant-service 模块 backend/tenant-service/pom.xml
-- [ ] T042 [US4] 创建租户服务启动类 backend/tenant-service/src/main/java/com/openiot/tenant/TenantApplication.java
-- [ ] T043 [US4] 创建租户服务配置 backend/tenant-service/src/main/resources/application.yml
-- [ ] T044 [P] [US4] 创建 Tenant 实体类 backend/tenant-service/src/main/java/com/openiot/tenant/entity/Tenant.java
-- [ ] T045 [P] [US4] 创建 SysUser 实体类 backend/tenant-service/src/main/java/com/openiot/tenant/entity/SysUser.java
-- [ ] T046 [US4] 创建 TenantMapper backend/tenant-service/src/main/java/com/openiot/tenant/mapper/TenantMapper.java
-- [ ] T047 [US4] 创建 SysUserMapper backend/tenant-service/src/main/java/com/openiot/tenant/mapper/SysUserMapper.java
-- [ ] T048 [US4] 创建 TenantService backend/tenant-service/src/main/java/com/openiot/tenant/service/TenantService.java
-- [ ] T049 [US4] 创建 AuthService backend/tenant-service/src/main/java/com/openiot/tenant/service/AuthService.java
-- [ ] T050 [US4] 创建 TenantController backend/tenant-service/src/main/java/com/openiot/tenant/controller/TenantController.java
-- [ ] T051 [US4] 创建 AuthController backend/tenant-service/src/main/java/com/openiot/tenant/controller/AuthController.java
+- [x] T041 [US4] 创建 tenant-service 模块 backend/tenant-service/pom.xml
+- [x] T042 [US4] 创建租户服务启动类 backend/tenant-service/src/main/java/com/openiot/tenant/TenantApplication.java
+- [x] T043 [US4] 创建租户服务配置 backend/tenant-service/src/main/resources/application.yml
+- [x] T044 [P] [US4] 创建 Tenant 实体类 backend/tenant-service/src/main/java/com/openiot/tenant/entity/Tenant.java
+- [x] T045 [P] [US4] 创建 SysUser 实体类 backend/tenant-service/src/main/java/com/openiot/tenant/entity/SysUser.java
+- [x] T046 [US4] 创建 TenantMapper backend/tenant-service/src/main/java/com/openiot/tenant/mapper/TenantMapper.java
+- [x] T047 [US4] 创建 SysUserMapper backend/tenant-service/src/main/java/com/openiot/tenant/mapper/SysUserMapper.java
+- [x] T048 [US4] 创建 TenantService backend/tenant-service/src/main/java/com/openiot/tenant/service/TenantService.java
+- [x] T049 [US4] 创建 AuthService backend/tenant-service/src/main/java/com/openiot/tenant/service/AuthService.java
+- [x] T050 [US4] 创建 TenantController backend/tenant-service/src/main/java/com/openiot/tenant/controller/TenantController.java
+- [x] T051 [US4] 创建 AuthController backend/tenant-service/src/main/java/com/openiot/tenant/controller/AuthController.java
 
 #### 多租户拦截器
 
-- [ ] T052 [US4] 创建 MyBatis Plus 租户拦截器 backend/common/common-security/src/main/java/com/openiot/common/security/interceptor/TenantLineInterceptor.java
-- [ ] T053 [US4] 创建租户上下文过滤器 backend/common/common-security/src/main/java/com/openiot/common/security/filter/TenantContextFilter.java
-- [ ] T054 [US4] 验证租户数据隔离功能
+- [x] T052 [US4] 创建 MyBatis Plus 租户拦截器 backend/common/common-security/src/main/java/com/openiot/common/security/interceptor/TenantLineInterceptor.java
+- [x] T053 [US4] 创建租户上下文过滤器 backend/common/common-security/src/main/java/com/openiot/common/security/filter/TenantContextFilter.java
+- [x] T054 [US4] 验证租户数据隔离功能
 
 ---
 

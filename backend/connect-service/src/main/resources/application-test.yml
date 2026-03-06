@@ -1,0 +1,55 @@
+server:
+  port: 8082
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  # 测试环境 Redis
+  data:
+    redis:
+      host: test-redis.internal
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 1
+
+  # 测试环境 Kafka
+  kafka:
+    bootstrap-servers: test-kafka.internal:9092
+
+# 测试环境日志配置
+logging:
+  level:
+    root: INFO
+    com.openiot: DEBUG
+    com.openiot.connect: DEBUG
+    io.netty: INFO
+    org.springframework.kafka: INFO
+
+# Netty 测试环境配置
+netty:
+  port: 8888
+  boss-threads: 1
+  worker-threads: 0
+  so-backlog: 4096
+  connect-timeout: 30000
+  reader-idle-time: 180
+  writer-idle-time: 180
+  all-idle-time: 360
+
+# 可观测性配置（测试环境）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+      sampling-probability: 0.5  # 50% 采样
+      otlp-endpoint: http://test-otel-collector:4317
+    logging:
+      tenant-mdc: true
+      sensitive-data-masking: true  # 测试环境脱敏
+    metrics:
+      business-enabled: true
+      netty-enabled: true
+      redis-enabled: true
+      kafka-enabled: true

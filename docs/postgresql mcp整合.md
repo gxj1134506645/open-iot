@@ -95,3 +95,23 @@ claude mcp list
 1. 开发环境可以使用当前账号；生产环境请使用最小权限账号。
 2. 建议改为环境变量注入连接信息，避免在仓库中明文保存密码。
 3. 如果仓库会对外共享，建议将敏感连接串移出版本库。
+
+## Codex 项目级 MCP（不影响 Claude Code）
+
+为避免改动全局 `~/.codex/config.toml`，本仓库提供了 Codex 项目级隔离方案：
+
+1. 项目内配置文件：`F:\codes\open-iot\.codex-home\config.toml`
+2. 启动脚本：`F:\codes\open-iot\scripts\codex-openiot.ps1`
+
+使用方式：
+
+```powershell
+cd F:\codes\open-iot
+.\scripts\codex-openiot.ps1
+```
+
+说明：
+
+- 脚本会将 `CODEX_HOME` 指向项目内 `.codex-home`，使 Codex 仅使用该项目的 MCP 配置。
+- Codex 这份配置当前为本地固定连接串：`postgresql://openiot:openiot123@127.0.0.1:5432/openiot`。
+- `.mcp.json` 仍由 Claude Code 使用，二者互不影响。

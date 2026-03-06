@@ -4,8 +4,10 @@ server:
 spring:
   application:
     name: data-service
-  config:
-    import: "optional:nacos:"
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # Nacos 配置（公共）
   cloud:
     nacos:
       discovery:
@@ -16,55 +18,47 @@ spring:
         file-extension: yaml
         namespace: public
         enabled: false
+
+  # 数据源驱动（公共）
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/openiot
-    username: openiot
-    password: openiot123
     driver-class-name: org.postgresql.Driver
+
+# Flyway 配置（独立数据库架构）
+# 说明：data-service 使用独立的 openiot_data 数据库
+# 包含：device_trajectory、raw_event 等数据相关表
+spring.flyway:
+  enabled: true  # 启用 Flyway
+  locations: classpath:db/migration
+
+  # MongoDB 配置（公共）
   data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password: openiot123
-      database: 0
     mongodb:
-      # MongoDB 连接 URI，authSource=admin 表示用户认证信息存储在 admin 数据库
-      uri: mongodb://openiot:openiot123@127.0.0.1:27017/openiot?authSource=admin
-      # 自动创建索引
       auto-index-creation: true
+
+  # Kafka 配置（公共）
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
     consumer:
       group-id: data-service
       auto-offset-reset: earliest
       enable-auto-commit: false
-      # 批量消费配置
       max-poll-records: 500
       fetch-min-size: 1024
       fetch-max-wait: 500ms
-      # 单次 poll 最大间隔
       max-poll-interval: 300000
-      # 会话超时
       session-timeout: 30000
       heartbeat-interval: 10000
-      # 反序列化
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "com.openiot.*"
     listener:
-      # 批量消费模式
       type: batch
-      # 手动确认
       ack-mode: manual
-      # 并发数
       concurrency: 3
-      # 自动启动
       auto-startup: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      # 生产者性能配置
       batch-size: 16384
       buffer-memory: 33554432
       linger-ms: 5
@@ -72,20 +66,57 @@ spring:
       acks: all
       retries: 3
 
+# MyBatis Plus 配置（公共）
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
 
+# Actuator 配置（公共）
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  health:
+    liveness:
+      enabled: true
+    readiness:
+      enabled: true
 
+# 可观测性配置（公共）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+    logging:
+      tenant-mdc: true
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
+      mongodb-enabled: true
+      kafka-enabled: true
+
+# 日志配置
 logging:
-  level:
-    com.openiot: debug
+  config: classpath:logback-spring.xml

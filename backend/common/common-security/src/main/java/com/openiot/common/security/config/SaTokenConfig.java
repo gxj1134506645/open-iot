@@ -2,6 +2,7 @@ package com.openiot.common.security.config;
 
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @since 1.0.0
  */
 @Configuration
+@ConditionalOnProperty(prefix = "openiot.security", name = "auth-enabled", havingValue = "true", matchIfMissing = false)
 public class SaTokenConfig implements WebMvcConfigurer {
 
     /**

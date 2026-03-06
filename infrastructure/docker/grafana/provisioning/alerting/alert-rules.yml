@@ -1,0 +1,289 @@
+# ========================================
+# Open-IoT Grafana 告警规则配置
+# ========================================
+
+# 告警规则组配置
+# 注意：Grafana 8+ 使用 provisioning API
+
+apiVersion: 1
+
+groups:
+  # ========================================
+  # 服务可用性告警组
+  # ========================================
+  - orgId: 1
+    name: service-availability
+    folder: OpenIoT
+    interval: 30s
+    rules:
+      # 服务宕机告警
+      - uid: service-down
+        title: 服务宕机
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: up{job="openiot-services"} == 0
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: absent(up{job="openiot-services"})
+              instant: true
+              refId: B
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: or
+              expression: $A || $B
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          description: "服务 {{ $labels.service }} 已经宕机超过 1 分钟"
+          summary: "服务 {{ $labels.service }} 宕机"
+          runbook_url: "https://wiki.openiot.io/troubleshooting/service-down"
+        labels:
+          severity: critical
+          category: availability
+        isPaused: false
+
+  # ========================================
+  # 错误率告警组
+  # ========================================
+  - orgId: 1
+    name: error-rates
+    folder: OpenIoT
+    interval: 30s
+    rules:
+      # 高错误率告警
+      - uid: high-error-rate
+        title: 5xx 错误率过高
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                sum(rate(http_server_requests_seconds_count{status=~"5..",service=~".+"}[5m]))
+                /
+                sum(rate(http_server_requests_seconds_count{service=~".+"}[5m])) > 0.01
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: "5xx 错误率 {{ $value | humanizePercentage }} 超过阈值 1%"
+          summary: "服务 {{ $labels.service }} 5xx 错误率过高"
+        labels:
+          severity: warning
+          category: errors
+        isPaused: false
+
+  # ========================================
+  # 性能告警组
+  # ========================================
+  - orgId: 1
+    name: performance
+    folder: OpenIoT
+    interval: 30s
+    rules:
+      # P95 延迟告警
+      - uid: high-latency-p95
+        title: P95 延迟过高
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{service=~".+"}[5m])) by (le, service)) > 3
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "P95 延迟 {{ $value | humanizeDuration }} 超过阈值 3s"
+          summary: "服务 {{ $labels.service }} P95 延迟过高"
+        labels:
+          severity: warning
+          category: performance
+        isPaused: false
+
+  # ========================================
+  # 资源告警组
+  # ========================================
+  - orgId: 1
+    name: resources
+    folder: OpenIoT
+    interval: 30s
+    rules:
+      # JVM 堆内存使用率告警
+      - uid: high-jvm-heap
+        title: JVM 堆内存使用率过高
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                sum(jvm_memory_used_bytes{area="heap",service=~".+"})
+                /
+                sum(jvm_memory_max_bytes{area="heap",service=~".+"}) > 0.85
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "堆内存使用率 {{ $value | humanizePercentage }} 超过阈值 85%"
+          summary: "服务 {{ $labels.service }} JVM 堆内存使用率过高"
+        labels:
+          severity: warning
+          category: resources
+        isPaused: false
+
+      # 数据库连接池耗尽告警
+      - uid: db-pool-exhausted
+        title: 数据库连接池即将耗尽
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: hikaricp_connections_pending{service=~".+"} > 5
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: "等待获取连接的请求数 {{ $value }} 超过阈值 5"
+          summary: "服务 {{ $labels.service }} 数据库连接池即将耗尽"
+        labels:
+          severity: critical
+          category: resources
+        isPaused: false
+
+  # ========================================
+  # Kafka 告警组
+  # ========================================
+  - orgId: 1
+    name: kafka
+    folder: OpenIoT
+    interval: 30s
+    rules:
+      # Kafka 消费积压告警
+      - uid: kafka-consumer-lag
+        title: Kafka 消费积压
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: sum(kafka_consumer_group_lag{service=~"data-service"}) by (group) > 10000
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "消息积压数量 {{ $value }} 超过阈值 10000"
+          summary: "Kafka 消费组 {{ $labels.group }} 消息积压"
+        labels:
+          severity: warning
+          category: messaging
+        isPaused: false
+
+  # ========================================
+  # 业务告警组
+  # ========================================
+  - orgId: 1
+    name: business
+    folder: OpenIoT
+    interval: 30s
+    rules:
+      # 设备离线率告警
+      - uid: high-device-offline-rate
+        title: 设备离线率过高
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                (openiot_device_total_count - openiot_device_online_count)
+                /
+                openiot_device_total_count > 0.2
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "设备离线率 {{ $value | humanizePercentage }} 超过阈值 20%"
+          summary: "设备离线率过高"
+        labels:
+          severity: warning
+          category: business
+        isPaused: false
+
+      # 消息处理失败率告警
+      - uid: high-message-failure-rate
+        title: 消息处理失败率过高
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: |
+                sum(rate(openiot_message_failed_total[5m]))
+                /
+                sum(rate(openiot_message_received_total[5m])) > 0.05
+              instant: true
+              refId: A
+        noDataState: NoData
+        execErrState: Alerting
+        for: 3m
+        annotations:
+          description: "失败率 {{ $value | humanizePercentage }} 超过阈值 5%"
+          summary: "消息处理失败率过高"
+        labels:
+          severity: warning
+          category: business
+        isPaused: false

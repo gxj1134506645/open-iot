@@ -4,8 +4,14 @@ server:
 spring:
   application:
     name: connect-service
-  config:
-    import: "optional:nacos:"
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # 数据源驱动（公共）
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  # Nacos 配置（公共）
   cloud:
     nacos:
       discovery:
@@ -16,18 +22,14 @@ spring:
         file-extension: yaml
         namespace: public
         enabled: false
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password: openiot123
-      database: 0
+
+  # Kafka 配置（公共）
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+# Netty 配置（公共）
 netty:
   port: 8888
   boss-threads: 1
@@ -39,17 +41,65 @@ netty:
   reader-idle-time: 120   # 读空闲超时（秒）
   writer-idle-time: 120   # 写空闲超时（秒）
   all-idle-time: 300      # 全空闲超时（秒）
+  metrics:
+    enabled: true
+    connections: true
+    bytes: true
+    latency: true
 
+# Flyway 配置（独立数据库架构）
+# 说明：connect-service 使用独立的 openiot_connect 数据库
+# 包含：device_session、connection_log 等连接相关表
+spring.flyway:
+  enabled: true  # 启用 Flyway
+  locations: classpath:db/migration
+
+# Actuator 配置（公共）
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: ${spring.application.name}
+      netty: enabled
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        netty.connections: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  health:
+    liveness:
+      enabled: true
+    readiness:
+      enabled: true
 
+# 可观测性配置（公共）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+    logging:
+      tenant-mdc: true
+    metrics:
+      business-enabled: true
+      netty-enabled: true
+      redis-enabled: true
+      kafka-enabled: true
+
+# 日志配置
 logging:
-  level:
-    com.openiot: debug
-    io.netty: info
+  config: classpath:logback-spring.xml

@@ -4,8 +4,10 @@ server:
 spring:
   application:
     name: tenant-service
-  config:
-    import: "optional:nacos:"
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # Nacos 配置（公共）
   cloud:
     nacos:
       discovery:
@@ -16,29 +18,23 @@ spring:
         file-extension: yaml
         namespace: public
         enabled: false
-  datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/openiot
-    username: openiot
-    password: openiot123
-    driver-class-name: org.postgresql.Driver
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password: openiot123
-      database: 0
 
+  # 数据源驱动（公共）
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+# MyBatis Plus 配置（公共）
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   global-config:
     db-config:
       logic-delete-field: deleteFlag
       logic-delete-value: '1'
       logic-not-delete-value: '0'
 
+# Sa-Token 配置（公共）
 sa-token:
   token-name: Authorization
   timeout: 86400
@@ -48,21 +44,64 @@ sa-token:
   token-style: uuid
   is-log: false
 
+# Flyway 配置（独立数据库架构）
+# 说明：tenant-service 使用独立的 openiot_tenant 数据库
+# 包含：tenant、sys_user、RBAC 权限表等租户相关表
+# 注意：其他服务使用各自的独立数据库
 spring.flyway:
   enabled: true
-  locations: classpath:db/migration
+  locations: classpath:db/migration  # 使用服务内的迁移脚本
   baseline-on-migrate: true
   validate-on-migrate: true
+  out-of-order: false  # 禁止乱序执行
 
+# Actuator 配置（公共）
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  health:
+    liveness:
+      enabled: true
+    readiness:
+      enabled: true
 
+# 可观测性配置（公共）
+openiot:
+  security:
+    auth-enabled: true
+  observability:
+    tracing:
+      enabled: true
+    logging:
+      tenant-mdc: true
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
+
+# 日志配置
 logging:
-  level:
-    com.openiot: debug
+  config: classpath:logback-spring.xml

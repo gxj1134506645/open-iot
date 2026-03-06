@@ -1,0 +1,10 @@
+apiVersion: 1
+
+providers:
+  - name: 'OpenIoT Dashboards'
+    folder: '/etc/grafana/provisioning/dashboards'
+    type: file
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFiles: true

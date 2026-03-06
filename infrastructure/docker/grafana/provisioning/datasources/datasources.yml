@@ -1,0 +1,94 @@
+# ========================================
+# Grafana 数据源配置
+# ========================================
+
+apiVersion: 1
+
+datasources:
+  # ========================================
+  # Prometheus - 指标数据源
+  # ========================================
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    uid: prometheus
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: "15s"
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: "2.48.0"
+      cacheLevel: 'High'
+      incrementalQuerying: true
+      incrementalQueryOverlapWindow: 10m
+    version: 1
+
+  # ========================================
+  # Loki - 日志数据源
+  # ========================================
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        # 从日志中的 traceId 跳转到 Tempo
+        - name: TraceID
+          matcherRegex: '"traceId":"([a-f0-9]+)"'
+          url: '$${__value.rawDataApiUrl}?service=OpenIoT&from=$${__from}&to=$${__to}&var-traceId=$1'
+          datasourceUid: tempo
+          urlDisplayLabel: 'View Trace'
+    version: 1
+
+  # ========================================
+  # Tempo - 链路追踪数据源
+  # ========================================
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    uid: tempo
+    editable: false
+    jsonData:
+      # Trace 到 Logs 的关联
+      tracesToLogs:
+        datasourceUid: 'loki'
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        filterByTraceID: true
+        filterBySpanID: false
+        customQuery: true
+        query: '{service="$${__span.tags.service}"} |= `$${__span.traceId}`'
+      # Trace 到 Metrics 的关联
+      serviceMap:
+        datasourceUid: 'prometheus'
+      # Node Graph 可视化
+      nodeGraph:
+        enabled: true
+      # 搜索配置
+      search:
+        hide: false
+      # TraceQL 配置
+      traceQuery:
+        timeShiftEnabled: true
+        timeShift: '30m'
+    version: 1
+
+  # ========================================
+  # Alertmanager - 告警管理
+  # ========================================
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://alertmanager:9093
+    uid: alertmanager
+    editable: false
+    jsonData:
+      implementation: prometheus
+      handleGrafanaManagedAlerts: true
+    version: 1

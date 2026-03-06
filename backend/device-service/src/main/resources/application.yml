@@ -4,8 +4,10 @@ server:
 spring:
   application:
     name: device-service
-  config:
-    import: "optional:nacos:"
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # Nacos 配置（公共）
   cloud:
     nacos:
       discovery:
@@ -16,19 +18,20 @@ spring:
         file-extension: yaml
         namespace: public
         enabled: false
+
+  # 数据源驱动（公共）
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/openiot
-    username: openiot
-    password: openiot123
     driver-class-name: org.postgresql.Driver
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password: openiot123
-      database: 0
+
+# Flyway 配置（独立数据库架构）
+# 说明：device-service 使用独立的 openiot_device 数据库
+# 包含：device、device_config、alarm_config 等设备相关表
+spring.flyway:
+  enabled: true  # 启用 Flyway
+  locations: classpath:db/migration
+
+  # Kafka 配置（公共）
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -36,26 +39,62 @@ spring:
       group-id: device-service
       auto-offset-reset: earliest
 
+# MyBatis Plus 配置（公共）
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   global-config:
     db-config:
       logic-delete-field: deleteFlag
       logic-delete-value: '1'
       logic-not-delete-value: '0'
 
+# Actuator 配置（公共）
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  health:
+    liveness:
+      enabled: true
+    readiness:
+      enabled: true
 
+# 可观测性配置（公共）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+    logging:
+      tenant-mdc: true
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
+
+# 日志配置（指定使用 logback-spring.xml）
 logging:
-  level:
-    com.openiot: debug
+  config: classpath:logback-spring.xml
