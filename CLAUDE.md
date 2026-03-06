@@ -522,4 +522,32 @@ update code
 fix bug
 修改了一些东西
 ```
+
+### Phase 完成提交规范
+
+**每个 Phase 阶段完成后 MUST 自动执行 git commit 和 push**：
+
+1. **提交时机**：Phase 的所有任务完成后，立即提交
+2. **提交内容**：包含该 Phase 的所有代码、配置、文档变更
+3. **提交格式**：遵循上述提交信息格式，标题注明 Phase 编号
+4. **自动推送**：提交后立即 push 到远程仓库
+
+**示例：**
+```
+feat: 完成 IoT 平台核心功能 Phase 2-3
+
+Phase 2: 基础架构层
+- 添加 GraalJS、Aviator、InfluxDB 依赖
+- 创建 rule-service 模块
+- 创建实体类和 Mapper 接口
+
+Phase 3: 产品-设备层级管理
+- ProductService：产品 CRUD
+- ProductController：REST API
+- DeviceService 增强：产品关联、设备认证
+```
+
+**流程：**
+1. Phase 任务全部完成 → 2. git add . → 3. git commit → 4. git push
+
 <!-- MANUAL ADDITIONS END -->

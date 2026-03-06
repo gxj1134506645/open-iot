@@ -2,16 +2,16 @@
 =============================================================================
 SYNC IMPACT REPORT
 =============================================================================
-Version change: 1.6.0 → 1.7.0 (MINOR - 新增数据字典强制原则)
+Version change: 1.7.0 → 1.8.0 (MINOR - 新增 Phase 完成提交规范)
 Modified principles:
-  - None
+  - Development Workflow 增强
 Added sections:
-  - X. 数据字典优先原则 (Data Dictionary First)
+  - Phase 完成提交规范（自动 commit + push）
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ (no changes needed - generic)
-  - .specify/templates/spec-template.md ⚠ (建议添加数据字典需求检查项)
-  - .specify/templates/tasks-template.md ⚠ (建议添加字典数据初始化任务类型)
+  - .specify/templates/spec-template.md ✅ (no changes needed - generic)
+  - .specify/templates/tasks-template.md ✅ (no changes needed - generic)
 Follow-up TODOs: None
 =============================================================================
 -->
@@ -315,12 +315,101 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 5. **代码审查**：Code Review 确保代码质量
 6. **部署验证**：测试环境验证，生产环境发布
 
+### Phase 完成提交规范（Phase Completion Commit）
+
+**每个 Phase 阶段完成后 MUST 自动执行 git commit 和 push**：
+
+- **提交时机**：Phase 的所有任务完成后，立即提交
+- **提交范围**：包含该 Phase 的所有代码、配置、文档变更
+- **提交信息**：遵循 Conventional Commits 格式，标题注明 Phase 编号
+- **自动推送**：提交后立即 push 到远程仓库
+
+**工作流程：**
+```
+Phase 任务全部完成
+  → git add .
+  → git commit（中文描述，注明 Phase）
+  → git push
+```
+
+**示例：**
+```
+feat: 完成 IoT 平台核心功能 Phase 2-3
+
+Phase 2: 基础架构层
+- 添加依赖、创建模块、实体类、Mapper
+
+Phase 3: 产品-设备层级管理
+- ProductService、ProductController、设备认证
+```
+
+**理由**: Phase 完成提交确保代码变更及时同步到远程仓库，避免本地代码丢失，同时为每个阶段提供清晰的版本里程碑，便于回滚和追溯。
+
 ### 分支管理
 
 - `main`: 生产环境分支，受保护
 - `develop`: 开发环境分支
 - `feature/*`: 功能开发分支
 - `hotfix/*`: 紧急修复分支
+
+### Phase 完成提交规范
+
+**每个 Phase 阶段完成后 MUST 自动执行 git commit 和 push**：
+
+#### 提交时机
+
+- Phase 的所有任务完成后，立即提交
+- 不得延迟提交，避免代码积压
+- 提交前确保代码编译通过、测试通过
+
+#### 提交内容
+
+- 包含该 Phase 的所有代码变更（实体类、Service、Controller、VO/DTO 等）
+- 包含数据库迁移脚本
+- 包含配置文件变更（pom.xml、application.yml 等）
+- 包含文档更新（README、API 文档等）
+
+#### 提交格式
+
+遵循 Conventional Commits 规范，**使用中文简体**：
+
+```
+<类型>: <简短描述>
+
+Phase <编号>: <Phase 名称>
+- <具体任务1>
+- <具体任务2>
+- <具体任务3>
+```
+
+**示例：**
+```
+feat: 完成 IoT 平台核心功能 Phase 2-3
+
+Phase 2: 基础架构层
+- 添加 GraalJS、Aviator、InfluxDB 依赖
+- 创建 rule-service 模块
+- 创建实体类和 Mapper 接口
+
+Phase 3: 产品-设备层级管理
+- ProductService：产品 CRUD
+- ProductController：REST API
+- DeviceService 增强：产品关联、设备认证
+```
+
+#### 提交流程
+
+1. **Phase 任务完成** → 确认所有任务已完成
+2. **代码验证** → 编译通过、测试通过
+3. **git add .** → 添加所有变更到暂存区
+4. **git commit** → 提交到本地仓库
+5. **git push** → 推送到远程仓库
+
+#### 自动化要求
+
+- AI 助手 MUST 在每个 Phase 完成后自动执行提交流程
+- 无需用户额外提醒，自动完成 commit 和 push
+- 提交信息 MUST 清晰描述该 Phase 的所有工作内容
 
 ### 提交规范
 
@@ -352,4 +441,4 @@ SaaS 模式下所有核心业务表 MUST 包含租户隔离能力。
 - 代码审查需要检查是否符合宪法原则
 - 复杂度增加必须有合理的理由和文档
 
-**Version**: 1.6.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-03-01
+**Version**: 1.8.0 | **Ratified**: 2026-02-25 | **Last Amended**: 2026-03-06
