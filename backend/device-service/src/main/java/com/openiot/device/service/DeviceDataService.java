@@ -115,6 +115,17 @@ public class DeviceDataService extends ServiceImpl<DeviceDataMapper, DeviceData>
     }
 
     /**
+     * 查询设备最新一条数据
+     *
+     * @param deviceId 设备ID
+     * @return 最新数据
+     */
+    public DeviceData getLatest(Long deviceId) {
+        List<DeviceData> latestList = queryLatest(deviceId, 1);
+        return latestList.isEmpty() ? null : latestList.get(0);
+    }
+
+    /**
      * 查询产品下所有设备的最新数据
      *
      * @param productId 产品ID
@@ -269,5 +280,128 @@ public class DeviceDataService extends ServiceImpl<DeviceDataMapper, DeviceData>
             log.error("发送数据到 Kafka 失败: {}", e.getMessage());
             // Kafka 发送失败不影响主流程
         }
+    }
+
+    /**
+     * 分页查询设备历史数据
+     *
+     * @param deviceId  设备ID
+     * @param pageNum   页码
+     * @param pageSize  每页大小
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 分页数据
+     */
+    public Page<DeviceData> queryDeviceData(Long deviceId, int pageNum, int pageSize,
+                                             LocalDateTime startTime, LocalDateTime endTime) {
+        // 验证设备存在性和权限
+        validateDeviceAccess(deviceId);
+
+        Page<DeviceData> page = new Page<>(pageNum, pageSize);
+        return baseMapper.selectPage(page, new LambdaQueryWrapper<DeviceData>()
+                .eq(DeviceData::getDeviceId, deviceId)
+                .ge(startTime != null, DeviceData::getDataTime, startTime)
+                .le(endTime != null, DeviceData::getDataTime, endTime)
+                .orderByDesc(DeviceData::getDataTime));
+    }
+
+    /**
+     * 查询设备属性数据（按属性）
+     *
+     * @param deviceId           设备ID
+     * @param propertyIdentifier 属性标识符
+     * @param startTime          开始时间
+     * @param endTime            结束时间
+     * @return 属性数据列表
+     */
+    public List<PropertyDataVO> queryPropertyData(Long deviceId, String propertyIdentifier,
+                                                   LocalDateTime startTime, LocalDateTime endTime) {
+        // 验证设备存在性和权限
+        validateDeviceAccess(deviceId);
+
+        List<DeviceData> dataList = queryByTimeRange(deviceId, startTime, endTime);
+
+        // 提取指定属性的数据
+        List<PropertyDataVO> result = new java.util.ArrayList<>();
+        for (DeviceData data : dataList) {
+            if (data.getData() != null && data.getData().has(propertyIdentifier)) {
+                JsonNode valueNode = data.getData().get(propertyIdentifier);
+                PropertyDataVO vo = new PropertyDataVO();
+                vo.setDeviceId(deviceId);
+                vo.setPropertyIdentifier(propertyIdentifier);
+                vo.setDataTime(data.getDataTime());
+
+                if (valueNode.isNumber()) {
+                    vo.setValue(valueNode.asDouble());
+                    vo.setDataType("number");
+                } else if (valueNode.isTextual()) {
+                    vo.setValue(valueNode.asText());
+                    vo.setDataType("string");
+                } else if (valueNode.isBoolean()) {
+                    vo.setValue(valueNode.asBoolean());
+                    vo.setDataType("boolean");
+                } else {
+                    vo.setValue(valueNode.toString());
+                    vo.setDataType("object");
+                }
+
+                result.add(vo);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 聚合查询设备数据统计
+     *
+     * @param deviceId  设备ID
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 统计数据
+     */
+    public DataStatisticsVO getStatistics(Long deviceId, LocalDateTime startTime, LocalDateTime endTime) {
+        // 验证设备存在性和权限
+        validateDeviceAccess(deviceId);
+
+        List<DeviceData> dataList = queryByTimeRange(deviceId, startTime, endTime);
+
+        DataStatisticsVO statistics = new DataStatisticsVO();
+        statistics.setDeviceId(deviceId);
+        statistics.setStartTime(startTime);
+        statistics.setEndTime(endTime);
+        statistics.setTotalCount(dataList.size());
+
+        if (!dataList.isEmpty()) {
+            statistics.setFirstDataTime(dataList.get(dataList.size() - 1).getDataTime());
+            statistics.setLastDataTime(dataList.get(0).getDataTime());
+        }
+
+        return statistics;
+    }
+
+    /**
+     * 属性数据 VO
+     */
+    @lombok.Data
+    public static class PropertyDataVO {
+        private Long deviceId;
+        private String propertyIdentifier;
+        private Object value;
+        private String dataType;
+        private LocalDateTime dataTime;
+    }
+
+    /**
+     * 数据统计 VO
+     */
+    @lombok.Data
+    public static class DataStatisticsVO {
+        private Long deviceId;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private Integer totalCount;
+        private LocalDateTime firstDataTime;
+        private LocalDateTime lastDataTime;
     }
 }
