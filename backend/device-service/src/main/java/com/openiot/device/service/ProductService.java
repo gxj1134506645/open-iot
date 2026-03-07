@@ -33,6 +33,7 @@ import java.util.Map;
 public class ProductService extends ServiceImpl<ProductMapper, Product> {
 
     private final DeviceMapper deviceMapper;
+    private final ThingModelService thingModelService;
     private final SecureRandom random = new SecureRandom();
 
     /**
@@ -222,6 +223,9 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
 
         // 检查租户权限
         checkTenantAccess(product);
+
+        // 验证物模型定义
+        thingModelService.validateThingModel(thingModel);
 
         product.setThingModel(thingModel);
         this.updateById(product);
