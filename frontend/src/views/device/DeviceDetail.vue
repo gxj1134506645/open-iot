@@ -282,7 +282,7 @@ const sendingCommand = ref(false)
 async function loadDeviceInfo() {
   try {
     loading.value = true
-    const data = await request.get(`/api/devices/${deviceId}`)
+    const data = await request.get(`/devices/${deviceId}`)
     deviceInfo.value = data
   } catch (error) {
     ElMessage.error('加载设备信息失败')
@@ -306,7 +306,7 @@ function goBack() {
 async function refreshData() {
   try {
     dataLoading.value = true
-    const data = await request.get(`/api/devices/${deviceId}/data/latest`)
+    const data = await request.get(`/devices/${deviceId}/data/latest`)
     properties.value = data?.properties || []
   } catch (error) {
     ElMessage.error('加载实时数据失败')
@@ -340,7 +340,7 @@ async function loadHistoryData() {
   try {
     historyLoading.value = true
     const [startTime, endTime] = dateRange.value || []
-    const data = await request.get(`/api/devices/${deviceId}/data/history`, {
+    const data = await request.get(`/devices/${deviceId}/data/history`, {
       params: {
         property: selectedProperty.value,
         startTime,
@@ -396,7 +396,7 @@ async function callService() {
         return
       }
     }
-    await request.post(`/api/devices/${deviceId}/services/${serviceForm.serviceId}/call`, {
+    await request.post(`/devices/${deviceId}/services/${serviceForm.serviceId}/call`, {
       inputParams: params
     })
     ElMessage.success('服务调用已下发')
@@ -436,7 +436,7 @@ async function setProperty() {
 
   try {
     settingProperty.value = true
-    await request.put(`/api/devices/${deviceId}/properties/${propertyForm.propertyId}`, {
+    await request.put(`/devices/${deviceId}/properties/${propertyForm.propertyId}`, {
       value: propertyForm.value
     })
     ElMessage.success('属性设置已下发')
@@ -466,7 +466,7 @@ async function sendCommand() {
         return
       }
     }
-    await request.post(`/api/devices/${deviceId}/commands/${commandForm.commandId}`, {
+    await request.post(`/devices/${deviceId}/commands/${commandForm.commandId}`, {
       params
     })
     ElMessage.success('命令已下发')
@@ -491,7 +491,7 @@ async function handleDelete() {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await request.delete(`/api/devices/${deviceId}`)
+    await request.delete(`/devices/${deviceId}`)
     ElMessage.success('删除成功')
     goBack()
   } catch (error) {

@@ -249,7 +249,7 @@ async function loadAlerts() {
     if (searchForm.status) params.status = searchForm.status
     if (searchForm.deviceName) params.deviceName = searchForm.deviceName
 
-    const data = await request.get('/api/alerts', { params })
+    const data = await request.get('/alerts', { params })
     alerts.value = data.records || data.list || []
     total.value = data.total || 0
   } catch (error) {
@@ -262,7 +262,7 @@ async function loadAlerts() {
 // 加载统计数据
 async function loadStatistics() {
   try {
-    const data = await request.get('/api/alerts/statistics')
+    const data = await request.get('/alerts/statistics')
     statistics.value = data || {}
   } catch (error) {
     console.error('加载统计数据失败', error)
@@ -347,7 +347,7 @@ async function handleIgnore(row: Alert) {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await request.put(`/api/alerts/${row.id}/handle`, {
+    await request.put(`/alerts/${row.id}/handle`, {
       status: 'ignored'
     })
     ElMessage.success('操作成功')
@@ -380,10 +380,10 @@ async function confirmHandle() {
     handleLoading.value = true
     if (currentAlert.value) {
       // 单个处理
-      await request.put(`/api/alerts/${currentAlert.value.id}/handle`, handleForm)
+      await request.put(`/alerts/${currentAlert.value.id}/handle`, handleForm)
     } else {
       // 批量处理
-      await request.put('/api/alerts/batch-handle', {
+      await request.put('/alerts/batch-handle', {
         alertIds: selectedIds.value,
         ...handleForm
       })

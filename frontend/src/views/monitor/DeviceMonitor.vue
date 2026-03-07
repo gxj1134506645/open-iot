@@ -183,9 +183,9 @@ async function loadDashboardData() {
   try {
     // 并行加载多个数据
     const [stats, alerts, devices] = await Promise.allSettled([
-      request.get('/api/dashboard/statistics').catch(() => ({ data: getMockStats() })),
-      request.get('/api/alerts', { params: { page: 1, size: 5 } }).catch(() => ({ data: [] })),
-      request.get('/api/devices', { params: { page: 1, size: 5 } }).catch(() => ({ data: [] }))
+      request.get('/dashboard/statistics').catch(() => ({ data: getMockStats() })),
+      request.get('/alerts', { params: { page: 1, size: 5 } }).catch(() => ({ data: [] })),
+      request.get('/devices', { params: { page: 1, size: 5 } }).catch(() => ({ data: [] }))
     ])
 
     if (stats.status === 'fulfilled') {
