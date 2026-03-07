@@ -39,6 +39,7 @@ public class OpenApiConfig {
                                 - **设备控制**：服务调用、属性设置、命令下发
                                 - **告警管理**：告警规则、告警记录、告警处理
                                 - **规则引擎**：设备规则配置、规则执行
+                                - **实时推送**：SSE 长连接、设备状态实时通知
 
                                 ### 认证方式
                                 所有接口需要通过 Sa-Token 认证，请求头携带：
@@ -138,6 +139,17 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
                 .group("06-规则引擎")
                 .pathsToMatch("/api/rules/**")
+                .build();
+    }
+
+    /**
+     * 实时推送 API 分组
+     */
+    @Bean
+    public GroupedOpenApi sseApi() {
+        return GroupedOpenApi.builder()
+                .group("07-实时推送")
+                .pathsToMatch("/api/sse/**")
                 .build();
     }
 }
