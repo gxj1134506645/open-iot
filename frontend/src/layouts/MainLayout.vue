@@ -18,6 +18,10 @@
           <el-icon><Bell /></el-icon>
           <span>告警管理</span>
         </el-menu-item>
+        <el-menu-item index="/rules">
+          <el-icon><DocumentCopy /></el-icon>
+          <span>规则引擎</span>
+        </el-menu-item>
         <el-menu-item index="/tenants" v-if="userStore.isAdmin">
           <el-icon><OfficeBuilding /></el-icon>
           <span>租户管理</span>
@@ -52,7 +56,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { Monitor, List, OfficeBuilding, Box, ArrowDown, Bell } from '@element-plus/icons-vue'
+import { Monitor, List, OfficeBuilding, Box, ArrowDown, Bell, DocumentCopy } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
