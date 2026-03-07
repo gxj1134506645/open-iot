@@ -2,7 +2,6 @@ package com.openiot.device.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.openiot.common.core.result.ApiResponse;
-import com.openiot.common.security.context.TenantContext;
 import com.openiot.device.entity.Device;
 import com.openiot.device.service.DeviceService;
 import com.openiot.device.service.DeviceServiceInvokeService;
@@ -11,7 +10,9 @@ import com.openiot.device.vo.ServiceInvokeRequestVO;
 import com.openiot.device.vo.ServiceInvokeVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ import java.util.Map;
 
 /**
  * 设备管理控制器
+ *
+ * @author open-iot
  */
 @Slf4j
 @RestController
@@ -37,7 +40,8 @@ public class DeviceController {
      * 创建设备
      */
     @PostMapping
-    public ApiResponse<Device> create(@RequestBody DeviceCreateRequest request) {
+    @Operation(summary = "创建设备", description = "创建新设备，可选择关联产品")
+    public ApiResponse<Device> create(@Valid @RequestBody DeviceCreateRequest request) {
         // 如果提供了 productId，使用带产品关联的创建方法
         if (request.getProductId() != null) {
             DeviceCreateVO vo = new DeviceCreateVO();
@@ -64,7 +68,9 @@ public class DeviceController {
      * 查询设备详情
      */
     @GetMapping("/{id}")
-    public ApiResponse<Device> getById(@PathVariable Long id) {
+    @Operation(summary = "查询设备详情", description = "根据设备ID查询设备详细信息")
+    public ApiResponse<Device> getById(
+            @Parameter(description = "设备ID") @PathVariable Long id) {
         Device device = deviceService.getById(id);
         if (device == null) {
             return ApiResponse.notFound("设备不存在");
@@ -76,11 +82,12 @@ public class DeviceController {
      * 分页查询设备列表
      */
     @GetMapping
+    @Operation(summary = "分页查询设备", description = "支持按状态、协议类型过滤")
     public ApiResponse<Page<Device>> page(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String protocolType) {
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "状态") @RequestParam(required = false) String status,
+            @Parameter(description = "协议类型") @RequestParam(required = false) String protocolType) {
         Page<Device> result = deviceService.page(page, size, status, protocolType);
         return ApiResponse.success(result);
     }
@@ -89,7 +96,10 @@ public class DeviceController {
      * 更新设备
      */
     @PutMapping("/{id}")
-    public ApiResponse<Device> update(@PathVariable Long id, @RequestBody DeviceUpdateRequest request) {
+    @Operation(summary = "更新设备", description = "更新设备信息")
+    public ApiResponse<Device> update(
+            @Parameter(description = "设备ID") @PathVariable Long id,
+            @RequestBody DeviceUpdateRequest request) {
         Device device = deviceService.getById(id);
         if (device == null) {
             return ApiResponse.notFound("设备不存在");
@@ -104,7 +114,9 @@ public class DeviceController {
      * 删除设备
      */
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
+    @Operation(summary = "删除设备", description = "删除指定设备")
+    public ApiResponse<Void> delete(
+            @Parameter(description = "设备ID") @PathVariable Long id) {
         deviceService.removeById(id);
         return ApiResponse.success("设备删除成功", null);
     }
@@ -113,7 +125,9 @@ public class DeviceController {
      * 重新生成设备Token
      */
     @PostMapping("/{id}/regenerate-token")
-    public ApiResponse<TokenResponse> regenerateToken(@PathVariable Long id) {
+    @Operation(summary = "重新生成设备Token", description = "为设备重新生成认证Token")
+    public ApiResponse<TokenResponse> regenerateToken(
+            @Parameter(description = "设备ID") @PathVariable Long id) {
         String token = deviceService.regenerateToken(id);
         TokenResponse response = new TokenResponse();
         response.setDeviceId(id);
@@ -125,11 +139,6 @@ public class DeviceController {
 
     /**
      * 调用设备服务（异步）
-     *
-     * @param id                设备 ID
-     * @param serviceIdentifier 服务标识符
-     * @param request           调用请求
-     * @return 调用记录（包含 invokeId）
      */
     @PostMapping("/{id}/services/{serviceIdentifier}")
     @Operation(summary = "调用设备服务", description = "异步调用设备定义的服务（如开关、重启等），立即返回 invokeId")
@@ -154,11 +163,6 @@ public class DeviceController {
 
     /**
      * 同步调用设备服务（阻塞等待响应）
-     *
-     * @param id                设备 ID
-     * @param serviceIdentifier 服务标识符
-     * @param request           调用请求
-     * @return 调用结果（包含设备响应）
      */
     @PostMapping("/{id}/services/{serviceIdentifier}/sync")
     @Operation(summary = "同步调用设备服务", description = "同步调用设备服务，阻塞等待设备响应（最多 30 秒）")
@@ -186,9 +190,6 @@ public class DeviceController {
 
     /**
      * 查询服务调用状态
-     *
-     * @param invocationId 调用 ID
-     * @return 调用记录
      */
     @GetMapping("/service-invocations/{invocationId}")
     @Operation(summary = "查询服务调用状态", description = "根据 invokeId 查询服务调用的执行状态和结果")
@@ -202,23 +203,33 @@ public class DeviceController {
         return ApiResponse.success(result);
     }
 
+    // ==================== 内部类定义 ====================
+
     /**
      * 设备创建请求
      */
     @Data
+    @Schema(description = "设备创建请求")
     public static class DeviceCreateRequest {
+        @Schema(description = "设备编码", example = "device001")
         private String deviceCode;
+        @Schema(description = "设备名称", example = "温湿度传感器-1")
         private String deviceName;
+        @Schema(description = "协议类型", example = "MQTT", allowableValues = {"MQTT", "TCP", "HTTP"})
         private String protocolType;
-        private Long productId;  // 可选：关联产品ID
+        @Schema(description = "产品ID（可选，关联产品）", example = "1")
+        private Long productId;
     }
 
     /**
      * 设备更新请求
      */
     @Data
+    @Schema(description = "设备更新请求")
     public static class DeviceUpdateRequest {
+        @Schema(description = "设备名称", example = "温湿度传感器-1")
         private String deviceName;
+        @Schema(description = "状态", example = "1", allowableValues = {"0", "1"})
         private String status;
     }
 
@@ -226,8 +237,11 @@ public class DeviceController {
      * Token响应
      */
     @Data
+    @Schema(description = "设备Token响应")
     public static class TokenResponse {
+        @Schema(description = "设备ID", example = "1")
         private Long deviceId;
+        @Schema(description = "设备Token", example = "abc123def456")
         private String deviceToken;
     }
 }

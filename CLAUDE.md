@@ -634,4 +634,196 @@ Phase 3: 产品-设备层级管理
 **流程：**
 1. Phase 任务全部完成 → 2. git add . → 3. git commit → 4. git push
 
+---
+
+## IoT 平台核心功能
+
+### 规则引擎
+
+#### 解析规则
+
+解析规则用于将设备上报的原始数据（二进制、十六进制、自定义格式）转换为标准 JSON 格式。
+
+**支持的脚本类型：**
+- **JavaScript (GraalJS)**：使用 JavaScript 语法编写解析脚本
+- **Aviator 表达式**：轻量级表达式引擎，适合简单数据转换
+
+**解析规则配置示例：**
+```javascript
+// JavaScript 解析脚本示例
+function parse(payload, metadata) {
+    // payload: 原始数据（Buffer 或字符串）
+    // metadata: 元数据（设备信息、产品信息等）
+
+    // 解析二进制数据
+    var temperature = payload.readInt8(0);
+    var humidity = payload.readUInt8(1);
+
+    // 返回标准格式
+    return {
+        temperature: temperature / 10.0,
+        humidity: humidity,
+        deviceId: metadata.deviceId,
+        timestamp: Date.now()
+    };
+}
+```
+
+**Aviator 表达式示例：**
+```java
+// 简单表达式：temperature * 0.1
+// 条件表达式：temperature > 50 ? 'high' : 'normal'
+```
+
+#### 映射规则
+
+映射规则用于将解析后的数据映射到物模型定义的属性、事件。
+
+**映射规则配置示例：**
+```json
+{
+  "propertyMappings": [
+    {
+      "sourceField": "temperature",
+      "targetProperty": "Temperature",
+      "dataType": "double",
+      "transformExpression": "value / 10.0"
+    },
+    {
+      "sourceField": "humidity",
+      "targetProperty": "Humidity",
+      "dataType": "int"
+    }
+  ],
+  "eventMappings": [
+    {
+      "sourceField": "alarmCode",
+      "targetEvent": "AlarmEvent",
+      "conditionExpression": "alarmCode != 0"
+    }
+  ]
+}
+```
+
+### 设备服务调用
+
+设备服务调用允许平台主动调用设备定义的服务（如开关、重启、配置下发等）。
+
+**调用方式：**
+- **同步调用**：阻塞等待设备响应，最多等待 30 秒
+- **异步调用**：立即返回 invokeId，通过 invokeId 查询执行结果
+
+**API 接口：**
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/devices/{id}/services/{serviceIdentifier}` | POST | 异步调用设备服务 |
+| `/api/v1/devices/{id}/services/{serviceIdentifier}/sync` | POST | 同步调用设备服务 |
+| `/api/v1/devices/service-invocations/{invocationId}` | GET | 查询调用状态 |
+
+**调用请求示例：**
+```json
+{
+  "inputParams": {
+    "speed": 100,
+    "direction": "forward"
+  },
+  "invokeType": "async",
+  "timeout": 30
+}
+```
+
+**调用状态：**
+- `pending`：待处理
+- `calling`：调用中
+- `success`：成功
+- `failed`：失败
+- `timeout`：超时
+
+### 告警管理
+
+告警管理提供告警规则配置、告警触发、告警处理等功能。
+
+**告警级别：**
+- `info`：信息告警
+- `warning`：警告告警
+- `critical`：严重告警
+- `emergency`：紧急告警
+
+**告警状态：**
+- `pending`：待处理
+- `processing`：处理中
+- `resolved`：已解决
+- `ignored`：已忽略
+
+**API 接口：**
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/alerts` | GET | 分页查询告警列表 |
+| `/api/v1/alerts/{alertId}` | GET | 查询告警详情 |
+| `/api/v1/alerts/{alertId}/handle` | PUT | 处理告警 |
+| `/api/v1/alerts/batch-handle` | PUT | 批量处理告警 |
+| `/api/v1/alerts/statistics` | GET | 告警统计 |
+| `/api/v1/alerts/pending` | GET | 查询待处理告警 |
+
+### InfluxDB 时序数据存储
+
+设备上报的属性数据、状态数据使用 InfluxDB 进行时序存储。
+
+**数据模型：**
+- `DevicePropertyPoint`：设备属性数据点
+- `DeviceStatusPoint`：设备状态数据点
+- `DeviceEventPoint`：设备事件数据点
+
+**查询接口：**
+```java
+// 查询设备属性历史数据
+List<DevicePropertyPoint> queryProperties(
+    String deviceId,
+    String propertyIdentifier,
+    Instant start,
+    Instant end
+);
+```
+
+### API 限流配置
+
+为防止恶意请求和系统过载，所有 API 接口默认启用基于 IP 的限流保护。
+
+**配置项：**
+```yaml
+openiot:
+  rate-limit:
+    enabled: true                     # 是否启用限流
+    permits-per-second: 10            # 每个 IP 每秒最多请求数
+    cache-expire-minutes: 10          # IP 缓存过期时间（分钟）
+```
+
+**限流响应：**
+- HTTP 状态码：429 Too Many Requests
+- 响应头：
+  - `X-RateLimit-Limit`：每秒最大请求数
+  - `X-RateLimit-Remaining`：剩余请求数
+  - `Retry-After`：建议重试等待时间（秒）
+
+### Swagger API 文档
+
+所有服务提供 Swagger UI 在线 API 文档。
+
+**访问地址：**
+- Device Service: `http://localhost:8081/swagger-ui.html`
+- Gateway Service: `http://localhost:8080/swagger-ui.html`
+
+**API 分组：**
+1. 产品管理
+2. 设备管理
+3. 物模型管理
+4. 设备控制
+5. 告警管理
+6. 规则引擎
+7. 实时推送（SSE）
+8. 数据重放
+9. 设备轨迹
+
 <!-- MANUAL ADDITIONS END -->

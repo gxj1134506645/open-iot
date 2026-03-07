@@ -90,6 +90,12 @@
             <artifactId>aviator</artifactId>
         </dependency>
 
+        <!-- Guava RateLimiter - API 限流 -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
         <!-- 测试依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

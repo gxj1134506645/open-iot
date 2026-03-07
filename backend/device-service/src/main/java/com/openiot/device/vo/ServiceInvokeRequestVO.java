@@ -17,19 +17,19 @@ public class ServiceInvokeRequestVO {
     /**
      * 输入参数（JSON 格式）
      */
-    @Schema(description = "输入参数")
+    @Schema(description = "输入参数，键值对形式", example = "{\"speed\": 100, \"direction\": \"forward\"}")
     private Map<String, Object> inputParams;
 
     /**
      * 调用类型：sync-同步，async-异步
      * 不指定时使用服务定义中的默认调用方式
      */
-    @Schema(description = "调用类型：sync-同步，async-异步")
+    @Schema(description = "调用类型：sync-同步，async-异步", example = "async", allowableValues = {"sync", "async"})
     private String invokeType;
 
     /**
      * 超时时间（秒），默认 30 秒
      */
-    @Schema(description = "超时时间（秒），默认 30 秒")
+    @Schema(description = "超时时间（秒），默认 30 秒", example = "30")
     private Integer timeout;
 }
