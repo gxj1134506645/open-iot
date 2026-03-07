@@ -37,7 +37,7 @@ spring:
         - id: device-service
           uri: lb://device-service
           predicates:
-            - Path=/api/v1/devices/**
+            - Path=/api/v1/devices/**,/api/products/**,/api/v1/products/**
           filters:
             - StripPrefix=0
         - id: data-service

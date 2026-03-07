@@ -69,10 +69,15 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
                 return unauthorized(exchange, "Token 无效或已过期");
             }
 
-            // 获取用户信息并注入请求头
-            String tenantId = (String) StpUtil.getSession().get("tenantId");
+            // 获取用户信息（直接通过 loginId 获取 Session，不依赖上下文）
             String userId = String.valueOf(loginId);
-            String role = (String) StpUtil.getSession().get("role");
+            cn.dev33.satoken.session.SaSession session = StpUtil.getSessionByLoginId(loginId, false);
+            if (session == null) {
+                return unauthorized(exchange, "Session 不存在或已过期");
+            }
+
+            String tenantId = (String) session.get("tenantId");
+            String role = (String) session.get("role");
 
             ServerHttpRequest newRequest = request.mutate()
                     .header("X-Tenant-Id", tenantId != null ? tenantId : "")
