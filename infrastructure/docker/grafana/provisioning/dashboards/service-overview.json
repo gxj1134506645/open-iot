@@ -10,143 +10,328 @@
         "enable": true,
         "hideControls": false,
         "id": 1,
-        "panels": [
-          {
-            "datasource": {
-              "type": "prometheus",
-              "uid": "prometheus"
-            },
-            "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              },
-              "overrides": {}
-            },
-            "gridPos": {
-              "h": 0,
-              "w": 0
-            },
-            "id": 2,
-            "panels": [],
-            "targets": [
-              {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "prometheus"
-                },
-                "expr": "up{job=\"spring-boot-services\"}",
-                "legendFormat": "{{service}}",
-                "refId": "A",
-                "step": 0,
-                "text": "服务状态",
-                "title": "服务状态",
-                "type": "stat"
-              },
-              {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "prometheus"
-                },
-                "expr": "sum(up{job=\"spring-boot-services\"})",
-                "legendFormat": "",
-                "refId": "B",
-                "step": 1,
-                "text": "服务总数",
-                "title": "服务总数",
-                "type": "stat"
-              }
-              {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "prometheus"
-                },
-                "expr": "avg(process_cpu_usage{job=\"spring-boot-services\"})",
-                "legendFormat": "{{service}}",
-                "refId": "C",
-                "step": 2,
-                "text": "CPU 使用率 (%)",
-                "title": "CPU 使用率 (%)",
-                "type": "stat"
-              },
-              {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "prometheus"
-                },
-                "expr": "avg(jvm_memory_used_bytes{job=\"spring-boot-services\", area=\"heap"} / 1024 / 1024)",
-                "legendFormat": "{{service}}",
-                "refId": "D",
-                "step": 3,
-                "text": "JVM 堆内存 (MB)",
-                "title": "JVM 堆内存 (MB)",
-                "type": "stat"
-              },
-              {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "prometheus"
-                },
-                "expr": "sum(rate(http_server_requests_seconds_count{job=\"spring-boot-services\"}[5m])) by (service)",
-                "legendFormat": "{{service}}",
-                "refId": "E",
-                "step": 4,
-                "text": "请求 QPS",
-                "title": "请求 QPS",
-                "type": "stat"
-              },
-              {
-                "datasource": {
-                  "type": "prometheus",
-                  "uid": "prometheus"
-                },
-                "expr": "sum(rate(http_server_requests_seconds_count{job=\"spring-boot-services\", status=~\"5..\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=\"spring-boot-services\"}[5m])) * 100",
-                "legendFormat": "{{service}}",
-                "refId": "F",
-                "step": 5,
-                "text": "错误率 (%)",
-                "title": "错误率 (%)",
-                "type": "stat"
-              }
-            ],
-            "title": "服务状态概览",
-            "type": "stat"
-          }
-        ],
+        "panels": [],
         "refresh": "5s",
         "schemaVersion": 38,
         "tags": [],
         "templating": {
-        "list": null,
+          "list": null
+        },
         "time": {
           "from": "now-1h",
           "to": "now"
         },
         "timepicker": {
-        "refresh_intervals": [
-          "5s",
-          "10s",
-          "30s",
-          "1m",
-          "5m"
-        ]
+          "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m"
+          ]
+        },
+        "timezone": "",
+        "title": "OpenIoT 服务概览",
+        "uid": "service-overview",
+        "version": 1
+      }
+    ]
+  },
+  "description": "OpenIoT 微服务状态监控仪表盘",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "timezone": "",
-      "title": "OpenIoT 服务概览",
-      "uid": "service-overview",
-      "version": 1
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "overrides": {}
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"spring-boot-services\"}",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "服务状态",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "overrides": {}
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(up{job=\"spring-boot-services\"})",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "服务总数",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "overrides": {},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg(rate(process_cpu_usage{job=\"spring-boot-services\"}[5m])) * 100",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "平均 CPU 使用率",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "overrides": {},
+          "unit": "bytes"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg(jvm_memory_used_bytes{job=\"spring-boot-services\", area=\"heap\"})",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "JVM 堆内存使用",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "overrides": {}
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"spring-boot-services\"}[5m])) by (service)",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "请求 QPS",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "overrides": {},
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"spring-boot-services\", status=~\"5..\"}[5m])) by (service) / sum(rate(http_server_requests_seconds_count{job=\"spring-boot-services\"}[5m])) by (service) * 100",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "title": "错误率",
+      "type": "timeseries"
     }
   ],
-  "description": "OpenIoT 微服务状态监控仪表盘",
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "tags": ["openiot", "services"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m"
+    ]
+  },
+  "timezone": "",
   "title": "OpenIoT 服务概览",
   "uid": "service-overview",
   "version": 1
