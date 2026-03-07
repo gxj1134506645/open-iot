@@ -305,4 +305,116 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
             throw BusinessException.forbidden("无权访问该产品");
         }
     }
+
+    /**
+     * 查询产品详情（包含统计信息）
+     *
+     * @param id 产品ID
+     * @return 产品详情 VO
+     */
+    public ProductDetailVO getProductDetail(Long id) {
+        Product product = getProductById(id);
+
+        // 查询关联设备数量
+        LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Device::getProductId, id);
+        long deviceCount = deviceMapper.selectCount(wrapper);
+
+        ProductDetailVO detail = new ProductDetailVO();
+        detail.setProduct(product);
+        detail.setDeviceCount(deviceCount);
+
+        return detail;
+    }
+
+    /**
+     * 查询产品的设备列表
+     *
+     * @param productId 产品ID
+     * @param pageNum   页码
+     * @param pageSize  每页大小
+     * @return 设备分页列表
+     */
+    public Page<Device> getProductDevices(Long productId, int pageNum, int pageSize) {
+        Product product = this.getById(productId);
+        if (product == null) {
+            throw BusinessException.notFound("产品不存在");
+        }
+
+        // 检查租户权限
+        checkTenantAccess(product);
+
+        Page<Device> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Device::getProductId, productId)
+               .orderByDesc(Device::getCreateTime);
+
+        return deviceMapper.selectPage(page, wrapper);
+    }
+
+    /**
+     * 启用/禁用产品
+     *
+     * @param id     产品ID
+     * @param status 状态：1-启用，0-禁用
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long id, String status) {
+        Product product = getProductById(id);
+        product.setStatus(status);
+        this.updateById(product);
+
+        log.info("更新产品状态: {} (id={}, status={})", product.getProductName(), id, status);
+    }
+
+    /**
+     * 查询产品统计信息
+     *
+     * @param productId 产品ID
+     * @return 统计信息
+     */
+    public ProductStatisticsVO getStatistics(Long productId) {
+        Product product = this.getById(productId);
+        if (product == null) {
+            throw BusinessException.notFound("产品不存在");
+        }
+
+        // 设备统计
+        LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Device::getProductId, productId);
+        long totalDevices = deviceMapper.selectCount(wrapper);
+
+        wrapper.eq(Device::getStatus, "1");
+        long onlineDevices = deviceMapper.selectCount(wrapper);
+
+        ProductStatisticsVO statistics = new ProductStatisticsVO();
+        statistics.setProductId(productId);
+        statistics.setProductName(product.getProductName());
+        statistics.setTotalDevices(totalDevices);
+        statistics.setOnlineDevices(onlineDevices);
+        statistics.setOfflineDevices(totalDevices - onlineDevices);
+
+        return statistics;
+    }
+}
+
+/**
+ * 产品详情 VO
+ */
+@Data
+class ProductDetailVO {
+    private Product product;
+    private Long deviceCount;
+}
+
+/**
+ * 产品统计 VO
+ */
+@Data
+class ProductStatisticsVO {
+    private Long productId;
+    private String productName;
+    private Long totalDevices;
+    private Long onlineDevices;
+    private Long offlineDevices;
 }

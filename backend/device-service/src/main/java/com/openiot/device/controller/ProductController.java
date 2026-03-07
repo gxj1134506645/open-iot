@@ -186,4 +186,92 @@ public class ProductController {
 
         return countMap;
     }
+
+    /**
+     * 查询产品详情（包含统计信息）
+     */
+    @GetMapping("/{id}/detail")
+    @Operation(summary = "查询产品详情", description = "查询产品详细信息及统计")
+    public ApiResponse<ProductDetailVO> getProductDetail(
+            @Parameter(description = "产品ID") @PathVariable Long id) {
+
+        log.info("查询产品详情: productId={}", id);
+
+        ProductDetailVO detail = productService.getProductDetail(id);
+        return ApiResponse.success(detail);
+    }
+
+    /**
+     * 查询产品设备分页列表
+     */
+    @GetMapping("/{id}/devices/page")
+    @Operation(summary = "查询产品设备（分页）", description = "分页查询产品关联的设备")
+    public ApiResponse<Page<Device>> getProductDevicesPage(
+            @Parameter(description = "产品ID") @PathVariable Long id,
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
+            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int pageSize) {
+
+        log.info("查询产品设备列表: productId={}, pageNum={}, pageSize={}", id, pageNum, pageSize);
+
+        Page<Device> devices = productService.getProductDevices(id, pageNum, pageSize);
+        return ApiResponse.success(devices);
+    }
+
+    /**
+     * 更新产品状态
+     */
+    @PutMapping("/{id}/status")
+    @Operation(summary = "更新产品状态", description = "启用或禁用产品")
+    public ApiResponse<Void> updateStatus(
+            @Parameter(description = "产品ID") @PathVariable Long id,
+            @RequestBody StatusUpdateRequest request) {
+
+        log.info("更新产品状态: productId={}, status={}", id, request.getStatus());
+
+        productService.updateStatus(id, request.getStatus());
+        return ApiResponse.success("产品状态更新成功", null);
+    }
+
+    /**
+     * 查询产品统计
+     */
+    @GetMapping("/{id}/statistics")
+    @Operation(summary = "产品统计", description = "查询产品设备统计信息")
+    public ApiResponse<ProductStatisticsVO> getStatistics(
+            @Parameter(description = "产品ID") @PathVariable Long id) {
+
+        log.info("查询产品统计: productId={}", id);
+
+        ProductStatisticsVO statistics = productService.getStatistics(id);
+        return ApiResponse.success(statistics);
+    }
+
+    /**
+     * 状态更新请求
+     */
+    @Data
+    public static class StatusUpdateRequest {
+        private String status;  // 1-启用，0-禁用
+    }
+
+    /**
+     * 产品详情 VO
+     */
+    @Data
+    public static class ProductDetailVO {
+        private Product product;
+        private Long deviceCount;
+    }
+
+    /**
+     * 产品统计 VO
+     */
+    @Data
+    public static class ProductStatisticsVO {
+        private Long productId;
+        private String productName;
+        private Long totalDevices;
+        private Long onlineDevices;
+        private Long offlineDevices;
+    }
 }
