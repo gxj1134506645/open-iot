@@ -28,6 +28,9 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: connect-service
+      auto-offset-reset: earliest
 
 # Netty 配置（公共）
 netty:
