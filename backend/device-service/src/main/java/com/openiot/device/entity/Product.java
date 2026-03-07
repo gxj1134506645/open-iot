@@ -66,6 +66,12 @@ public class Product {
     private String dataFormat;
 
     /**
+     * 产品描述
+     */
+    @TableField("description")
+    private String description;
+
+    /**
      * 物模型定义（JSON格式）
      */
     @TableField(value = "thing_model", typeHandler = JsonbTypeHandler.class)

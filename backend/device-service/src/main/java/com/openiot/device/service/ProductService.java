@@ -240,7 +240,8 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     public int getDeviceCount(Long productId) {
         LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Device::getProductId, productId);
-        return (int) deviceMapper.selectCount(wrapper);
+        Long count = deviceMapper.selectCount(wrapper);
+        return count != null ? count.intValue() : 0;
     }
 
     /**

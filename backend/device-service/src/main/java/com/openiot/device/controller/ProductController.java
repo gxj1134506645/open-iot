@@ -102,11 +102,11 @@ public class ProductController {
     @GetMapping
     @Operation(summary = "分页查询产品", description = "支持按名称、协议类型、状态过滤")
     public ApiResponse<Page<ProductVO>> getProductList(
-        @Parameter(description = "页码") @RequestParam(defaultValue = "1") int pageNum,
-        @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int pageSize,
-        @Parameter(description = "产品名称") @RequestParam(required = false) String productName,
-        @Parameter(description = "协议类型") @RequestParam(required = false) String protocolType,
-        @Parameter(description = "状态") @RequestParam(required = false) String status) {
+        @Parameter(description = "页码") @RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
+        @Parameter(description = "每页大小") @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @Parameter(description = "产品名称") @RequestParam(value = "productName", required = false) String productName,
+        @Parameter(description = "协议类型") @RequestParam(value = "protocolType", required = false) String protocolType,
+        @Parameter(description = "状态") @RequestParam(value = "status", required = false) String status) {
 
         log.info("查询产品列表: pageNum={}, pageSize={}, name={}, protocol={}, status={}",
             pageNum, pageSize, productName, protocolType, status);
