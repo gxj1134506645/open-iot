@@ -5,6 +5,7 @@ import com.openiot.common.core.result.ApiResponse;
 import com.openiot.common.security.context.TenantContext;
 import com.openiot.device.entity.Device;
 import com.openiot.device.service.DeviceService;
+import com.openiot.device.vo.DeviceCreateVO;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,19 @@ public class DeviceController {
      */
     @PostMapping
     public ApiResponse<Device> create(@RequestBody DeviceCreateRequest request) {
+        // 如果提供了 productId，使用带产品关联的创建方法
+        if (request.getProductId() != null) {
+            DeviceCreateVO vo = new DeviceCreateVO();
+            vo.setDeviceCode(request.getDeviceCode());
+            vo.setDeviceName(request.getDeviceName());
+            vo.setProtocolType(request.getProtocolType());
+            vo.setProductId(request.getProductId());
+
+            Device created = deviceService.createDeviceWithProduct(vo);
+            return ApiResponse.success("设备创建成功", created);
+        }
+
+        // 否则使用普通创建方法
         Device device = new Device();
         device.setDeviceCode(request.getDeviceCode());
         device.setDeviceName(request.getDeviceName());
@@ -102,6 +116,7 @@ public class DeviceController {
         private String deviceCode;
         private String deviceName;
         private String protocolType;
+        private Long productId;  // 可选：关联产品ID
     }
 
     /**
