@@ -55,23 +55,27 @@ public class AuthService {
         // 登录
         StpUtil.login(user.getId());
 
-        // 存储会话信息
+        // 存储会话信息（注意：ConcurrentHashMap 不允许 null 值）
         Long tenantId = user.getTenantId();
-        StpUtil.getSession().set("tenantId", tenantId != null ? String.valueOf(tenantId) : null);
+        if (tenantId != null) {
+            StpUtil.getSession().set("tenantId", String.valueOf(tenantId));
+        }
+        StpUtil.getSession().set("userId", String.valueOf(user.getId()));
         StpUtil.getSession().set("username", user.getUsername());
 
         // 从数据库动态加载角色和权限（支持多角色）
         List<String> roles = permissionService.getUserRoles(user.getId());
         List<String> permissions = permissionService.getUserPermissions(user.getId());
 
-        StpUtil.getSession().set("roles", roles);
-        StpUtil.getSession().set("permissions", permissions);
+        StpUtil.getSession().set("roles", roles != null ? roles : List.of());
+        StpUtil.getSession().set("permissions", permissions != null ? permissions : List.of());
 
         // 兼容旧代码：保留单个 role 字段（取第一个角色）
-        String primaryRole = roles.isEmpty() ? null : roles.get(0);
-        StpUtil.getSession().set("role", primaryRole);
+        if (!roles.isEmpty()) {
+            StpUtil.getSession().set("role", roles.get(0));
+        }
 
-        log.info("用户登录成功: {} (roles={}, permissions={})", username, roles, permissions.size());
+        log.info("用户登录成功: {} (roles={}, permissions={})", username, roles, permissions != null ? permissions.size() : 0);
 
         return StpUtil.getTokenValue();
     }

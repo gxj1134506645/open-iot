@@ -6,6 +6,10 @@ spring:
     activate:
       on-profile: dev
 
+  # 允许 Bean 定义覆盖（解决 common 模块与自动配置冲突）
+  main:
+    allow-bean-definition-overriding: true
+
   # 设备服务数据库（独立数据库）
   datasource:
     url: jdbc:postgresql://127.0.0.1:5432/openiot_device

@@ -50,6 +50,16 @@ mybatis-plus:
       logic-delete-value: '1'
       logic-not-delete-value: '0'
 
+# Sa-Token 配置（公共）
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: true
+  is-share: true
+  token-style: uuid
+  is-log: false
+
 # Actuator 配置（公共）
 management:
   endpoints:
