@@ -43,9 +43,9 @@ public class RouteConfig {
                         )
                         .uri("lb://tenant-service")
                 )
-                // 设备服务路由（包含设备管理、产品管理）
+                // 设备服务路由（包含设备管理、产品管理、告警管理）
                 .route("device-service", r -> r
-                        .path("/api/v1/devices/**", "/api/products/**", "/api/v1/products/**")
+                        .path("/api/v1/devices/**", "/api/products/**", "/api/v1/products/**", "/api/v1/alerts/**")
                         .filters(f -> f
                                 .addRequestHeader("X-Gateway-Time", String.valueOf(System.currentTimeMillis()))
                                 .addResponseHeader("X-Gateway-Name", "openiot-gateway")
