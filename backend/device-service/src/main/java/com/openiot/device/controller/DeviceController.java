@@ -84,10 +84,10 @@ public class DeviceController {
     @GetMapping
     @Operation(summary = "分页查询设备", description = "支持按状态、协议类型过滤")
     public ApiResponse<Page<Device>> page(
-            @Parameter(description = "页码") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "状态") @RequestParam(required = false) String status,
-            @Parameter(description = "协议类型") @RequestParam(required = false) String protocolType) {
+            @Parameter(description = "页码") @RequestParam(name = "page", defaultValue = "1") int page,
+            @Parameter(description = "每页大小") @RequestParam(name = "size", defaultValue = "10") int size,
+            @Parameter(description = "状态") @RequestParam(name = "status", required = false) String status,
+            @Parameter(description = "协议类型") @RequestParam(name = "protocolType", required = false) String protocolType) {
         Page<Device> result = deviceService.page(page, size, status, protocolType);
         return ApiResponse.success(result);
     }

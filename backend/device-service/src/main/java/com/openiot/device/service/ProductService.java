@@ -267,9 +267,11 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
         Page<Product> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
 
-        // 租户过滤
-        Long tenantId = getTenantId();
-        wrapper.eq(Product::getTenantId, tenantId);
+        // 租户过滤：平台管理员查全量，租户用户只查自己的
+        if (!TenantContext.isPlatformAdmin()) {
+            Long tenantId = getTenantId();
+            wrapper.eq(Product::getTenantId, tenantId);
+        }
 
         // 条件过滤
         if (productName != null && !productName.isEmpty()) {
@@ -379,9 +381,12 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     }
 
     /**
-     * 检查租户访问权限
+     * 检查租户访问权限（平台管理员跳过检查）
      */
     private void checkTenantAccess(Product product) {
+        if (TenantContext.isPlatformAdmin()) {
+            return;
+        }
         Long currentTenantId = getTenantId();
         if (!currentTenantId.equals(product.getTenantId())) {
             log.warn("跨租户访问被拒绝: current={}, target={}",

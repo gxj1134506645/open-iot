@@ -255,9 +255,12 @@ public class DeviceService extends ServiceImpl<DeviceMapper, Device> {
     }
 
     /**
-     * 检查租户访问权限
+     * 检查租户访问权限（平台管理员跳过检查）
      */
     private void checkTenantAccess(Device device) {
+        if (TenantContext.isPlatformAdmin()) {
+            return;
+        }
         String tenantId = TenantContext.getTenantId();
         if (tenantId != null && !tenantId.equals(String.valueOf(device.getTenantId()))) {
             log.warn("跨租户访问被拒绝: current={}, target={}", tenantId, device.getTenantId());
