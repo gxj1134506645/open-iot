@@ -497,14 +497,14 @@ onUnmounted(() => {
   gap: 24px;
   flex: 1;
   min-height: 0;
+  grid-template-rows: 1fr;
 }
 
 /* 图表区域 */
 .charts-section {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
   gap: 24px;
-  flex: 1;
   min-height: 0;
 }
 
@@ -513,9 +513,9 @@ onUnmounted(() => {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
-  flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .chart-header {
@@ -544,10 +544,10 @@ onUnmounted(() => {
 
 /* 信息区域 */
 .info-section {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
   gap: 24px;
-  height: 100%;
+  min-height: 0;
 }
 
 .info-card {
@@ -556,7 +556,6 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-height: 0;
   overflow: hidden;
 }
@@ -609,6 +608,7 @@ onUnmounted(() => {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 /* 空状态 */
