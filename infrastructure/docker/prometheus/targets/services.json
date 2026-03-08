@@ -7,7 +7,7 @@
     }
   },
   {
-    "targets": ["host.docker.internal:8086"],
+    "targets": ["host.docker.internal:8087"],
     "labels": {
       "service": "tenant-service",
       "__metrics_path__": "/actuator/prometheus"
