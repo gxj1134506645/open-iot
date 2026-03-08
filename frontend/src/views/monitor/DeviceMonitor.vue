@@ -493,7 +493,7 @@ onUnmounted(() => {
 /* 主内容网格 */
 .content-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 380px;
   gap: 24px;
   flex: 1;
   min-height: 0;
@@ -504,6 +504,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  flex: 1;
+  min-height: 0;
 }
 
 .chart-card {
@@ -545,6 +547,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  height: 100%;
 }
 
 .info-card {
@@ -552,6 +555,11 @@ onUnmounted(() => {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
   flex-direction: column;
   flex: 1;
   min-height: 0;
