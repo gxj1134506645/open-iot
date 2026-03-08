@@ -6,6 +6,19 @@ spring:
     activate:
       on-profile: dev
 
+  # 开发环境 Nacos 配置
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8848
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        enabled: true
+        group: DEFAULT_GROUP
+        service: gateway-service
+      config:
+        enabled: false
+
   # 开发环境 Redis
   data:
     redis:
