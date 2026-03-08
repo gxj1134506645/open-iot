@@ -31,6 +31,7 @@ import java.util.Set;
 public class ThingModelService {
 
     private final ObjectMapper objectMapper;
+    private final ProductService productService;
 
     /**
      * 验证物模型定义
@@ -422,5 +423,75 @@ public class ThingModelService {
 
         properties.add(property);
         return model;
+    }
+
+    // ==================== 新增方法（供 Controller 调用）====================
+
+    /**
+     * 保存物模型
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveThingModel(Long productId, String thingModelJson) {
+        Product product = productService.getProductById(productId);
+        if (product == null) {
+            throw BusinessException.badRequest("产品不存在");
+        }
+        try {
+            JsonNode thingModel = objectMapper.readTree(thingModelJson);
+            validateThingModel(thingModel);
+            product.setThingModel(thingModel);
+            productService.updateById(product);
+        } catch (Exception e) {
+            throw BusinessException.badRequest("物模型格式错误: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除物模型
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteThingModel(Long productId) {
+        Product product = productService.getProductById(productId);
+        if (product == null) {
+            throw BusinessException.badRequest("产品不存在");
+        }
+        product.setThingModel(null);
+        productService.updateById(product);
+    }
+
+    /**
+     * 获取物模型的属性列表
+     */
+    public JsonNode getProperties(Long productId) {
+        Product product = productService.getProductById(productId);
+        if (product == null || product.getThingModel() == null) {
+            return objectMapper.createArrayNode();
+        }
+        JsonNode properties = product.getThingModel().get("properties");
+        return properties != null ? properties : objectMapper.createArrayNode();
+    }
+
+    /**
+     * 获取物模型的事件列表
+     */
+    public JsonNode getEvents(Long productId) {
+        Product product = productService.getProductById(productId);
+        if (product == null || product.getThingModel() == null) {
+            return objectMapper.createArrayNode();
+        }
+        JsonNode events = product.getThingModel().get("events");
+        return events != null ? events : objectMapper.createArrayNode();
+    }
+
+    /**
+     * 获取物模型的服务列表
+     */
+    public JsonNode getServices(Long productId) {
+        Product product = productService.getProductById(productId);
+        if (product == null || product.getThingModel() == null) {
+            return objectMapper.createArrayNode();
+        }
+        JsonNode services = product.getThingModel().get("services");
+        return services != null ? services : objectMapper.createArrayNode();
     }
 }

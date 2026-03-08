@@ -524,7 +524,7 @@ public class ParseRuleService extends ServiceImpl<ParseRuleMapper, ParseRule> {
                 context.close();
             }
         } catch (org.graalvm.polyglot.PolyglotException e) {
-            if (e.isTimedOut()) {
+            if (e.isCancelled()) {
                 throw BusinessException.badRequest("JavaScript 执行超时（3秒）");
             }
             throw BusinessException.badRequest("JavaScript 执行错误: " + e.getMessage());

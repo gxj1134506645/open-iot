@@ -60,6 +60,11 @@ public class Device {
     private String protocolType;
 
     /**
+     * 最后活跃时间
+     */
+    private LocalDateTime lastActiveTime;
+
+    /**
      * 状态：0-禁用，1-启用
      */
     private String status;

@@ -210,19 +210,18 @@ public class ThingModelValidator {
      */
     private void checkRange(String identifier, double value, JsonNode propertyDef) {
         if (propertyDef.has("min")) {
-                double min = propertyDef.get("min").asDouble();
-                if (value < min) {
-                    throw BusinessException.badRequest(
-                        String.format("属性 '%s' 的值 %.2f 小于最小值 %.2f", identifier, value, min));
-                }
+            double min = propertyDef.get("min").asDouble();
+            if (value < min) {
+                throw BusinessException.badRequest(
+                    String.format("属性 '%s' 的值 %.2f 小于最小值 %.2f", identifier, value, min));
             }
+        }
 
-            if (propertyDef.has("max")) {
-                double max = propertyDef.get("max").asDouble();
-                if (value > max) {
-                    throw BusinessException.badRequest(
-                        String.format("属性 '%s' 的值 %.2f 大于最大值 %.2f", identifier, value, max));
-                }
+        if (propertyDef.has("max")) {
+            double max = propertyDef.get("max").asDouble();
+            if (value > max) {
+                throw BusinessException.badRequest(
+                    String.format("属性 '%s' 的值 %.2f 大于最大值 %.2f", identifier, value, max));
             }
         }
     }
@@ -233,52 +232,51 @@ public class ThingModelValidator {
     private Object parseValueFromJson(JsonNode json, String field) {
         JsonNode fieldNode = json.get(field);
         if (fieldNode == null || fieldNode.isNull()) {
-                return null;
-            }
+            return null;
+        }
 
         if (fieldNode.isNumber()) {
-                return fieldNode.asDouble();
-            } else if (fieldNode.isBoolean()) {
-                return fieldNode.asBoolean();
-            } else if (fieldNode.isTextual()) {
-                return fieldNode.asText();
-            } else {
-                return fieldNode;
-            }
+            return fieldNode.asDouble();
+        } else if (fieldNode.isBoolean()) {
+            return fieldNode.asBoolean();
+        } else if (fieldNode.isTextual()) {
+            return fieldNode.asText();
+        } else {
+            return fieldNode;
         }
+    }
 
     /**
      * 验证参数类型
      */
     private void validateParamType(String serviceId, String paramId, Object value, String expectedType) {
         if (value == null) {
-                return;
-            }
+            return;
+        }
 
-            switch (expectedType.toLowerCase()) {
-                case "int":
-                case "float":
-                case "double":
-                    if (!(value instanceof Number)) {
-                        throw BusinessException.badRequest(
-                            String.format("服务 '%s' 参数 '%s' 期望数值类型", serviceId, paramId));
-                    }
-                    break;
-                case "string":
-                    if (!(value instanceof String)) {
-                        throw BusinessException.badRequest(
-                            String.format("服务 '%s' 参数 '%s' 期望字符串类型", serviceId, paramId));
-                    }
-                    break;
-                case "boolean":
-                    if (!(value instanceof Boolean)) {
-                        throw BusinessException.badRequest(
-                            String.format("服务 '%s' 参数 '%s' 期望布尔类型", serviceId, paramId));
-                    }
-                    break;
-                default:
-                    break;
-            }
+        switch (expectedType.toLowerCase()) {
+            case "int":
+            case "float":
+            case "double":
+                if (!(value instanceof Number)) {
+                    throw BusinessException.badRequest(
+                        String.format("服务 '%s' 参数 '%s' 期望数值类型", serviceId, paramId));
+                }
+                break;
+            case "string":
+                if (!(value instanceof String)) {
+                    throw BusinessException.badRequest(
+                        String.format("服务 '%s' 参数 '%s' 期望字符串类型", serviceId, paramId));
+                }
+                break;
+            case "boolean":
+                if (!(value instanceof Boolean)) {
+                    throw BusinessException.badRequest(
+                        String.format("服务 '%s' 参数 '%s' 期望布尔类型", serviceId, paramId));
+                }
+                break;
+            default:
+                break;
         }
     }
 }

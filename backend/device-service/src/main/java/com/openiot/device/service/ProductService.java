@@ -393,39 +393,6 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     // ==================== 缓存操作 ====================
 
     /**
-     * 获取缓存 Key
-     */
-    private String getCacheKey(Long productId) {
-        return PRODUCT_CACHE_KEY_PREFIX + productId;
-    }
-
-    /**
-     * 缓存产品信息
-     */
-    private void cacheProduct(Product product) {
-        try {
-            String cacheKey = getCacheKey(product.getId());
-            redisUtil.set(cacheKey, product, CACHE_TTL_SECONDS);
-            log.debug("缓存产品信息: id={}", product.getId());
-        } catch (Exception e) {
-            log.warn("缓存产品信息失败: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * 清除产品缓存
-     */
-    private void evictProductCache(Long productId) {
-        try {
-            String cacheKey = getCacheKey(productId);
-            redisUtil.delete(cacheKey);
-            log.debug("清除产品缓存: id={}", productId);
-        } catch (Exception e) {
-            log.warn("清除产品缓存失败: {}", e.getMessage());
-        }
-    }
-
-    /**
      * 查询产品详情（包含统计信息）
      *
      * @param id 产品ID
