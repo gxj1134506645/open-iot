@@ -559,11 +559,6 @@ onUnmounted(() => {
   min-height: 0;
   overflow: hidden;
 }
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
 
 .info-header {
   padding: 20px 24px;
