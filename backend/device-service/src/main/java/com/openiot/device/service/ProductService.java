@@ -372,7 +372,7 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
      */
     private Long getTenantId() {
         String tenantId = TenantContext.getTenantId();
-        if (tenantId == null) {
+        if (tenantId == null || tenantId.isEmpty()) {
             throw BusinessException.unauthorized("未找到租户信息");
         }
         return Long.valueOf(tenantId);

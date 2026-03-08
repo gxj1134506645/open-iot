@@ -30,24 +30,28 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        # tenant-service: 租户、用户、认证
         - id: tenant-service
           uri: lb://tenant-service
           predicates:
-            - Path=/api/v1/tenants/**,/api/v1/users/**,/api/v1/auth/**
+            - Path=/api/v1/tenants/**,/api/v1/users/**,/api/v1/auth/**,/api/v1/init/**
           filters:
             - StripPrefix=0
+        # device-service: 设备、产品、告警、轨迹、MQTT 认证、数据重放
         - id: device-service
           uri: lb://device-service
           predicates:
-            - Path=/api/v1/devices/**,/api/products/**,/api/v1/products/**,/api/v1/alerts/**
+            - Path=/api/v1/devices/**,/api/v1/products/**,/api/v1/alerts/**,/api/v1/trajectory/**,/api/v1/mqtt/**,/api/v1/rules/**,/api/v1/replay/**
           filters:
             - StripPrefix=0
+        # data-service: 数据、SSE
         - id: data-service
           uri: lb://data-service
           predicates:
-            - Path=/api/v1/data/**,/api/v1/replay/**,/api/v1/sse/**
+            - Path=/api/v1/data/**,/api/v1/sse/**,/api/v1/alarms/**,/api/v1/dlq/**,/api/v1/forward/**
           filters:
             - StripPrefix=0
+        # rule-service: 规则引擎
         - id: rule-service
           uri: lb://rule-service
           predicates:

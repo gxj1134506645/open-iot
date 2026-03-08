@@ -60,7 +60,8 @@ public class SecurityConfig {
                 String role = httpRequest.getHeader(USER_ROLE_HEADER);
 
                 // 2. 如果 headers 为空，尝试从 Sa-Token Session 读取（直接调用服务的情况）
-                if (tenantId == null && userId == null) {
+                // 注意：需同时检查空字符串（Gateway 可能注入 "" 而非 null）
+                if ((tenantId == null || tenantId.isEmpty()) && (userId == null || userId.isEmpty())) {
                     String token = httpRequest.getHeader(AUTHORIZATION_HEADER);
                     if (token != null && !token.isEmpty()) {
                         try {

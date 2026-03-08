@@ -23,7 +23,7 @@ import java.util.Set;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/device/status")
+@RequestMapping("/api/v1/devices/status")
 @RequiredArgsConstructor
 @Tag(name = "设备状态", description = "设备在线状态、在线设备列表等接口")
 public class DeviceStatusController {

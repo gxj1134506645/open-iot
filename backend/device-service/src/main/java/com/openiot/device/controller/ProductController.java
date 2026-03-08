@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @Tag(name = "产品管理", description = "产品 CRUD 接口")
 public class ProductController {

@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/replay")
+@RequestMapping("/api/v1/replay")
 @RequiredArgsConstructor
 @Tag(name = "数据重放", description = "死信队列重放和数据恢复接口")
 public class ReplayController {

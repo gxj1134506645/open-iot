@@ -377,7 +377,7 @@ async function loadProducts(): Promise<void> {
     if (searchForm.protocolType) {
       params.protocolType = searchForm.protocolType
     }
-    const data = await request.get('/api/products', { params })
+    const data = await request.get('/products', { params })
     products.value = data.records || data.list || []
     total.value = data.total || 0
   } catch (error) {
@@ -437,10 +437,10 @@ async function handleSubmit(): Promise<void> {
     await formRef.value?.validate()
     submitLoading.value = true
     if (editingId.value) {
-      await request.put(`/api/products/${editingId.value}`, formData)
+      await request.put(`/products/${editingId.value}`, formData)
       ElMessage.success('更新成功')
     } else {
-      await request.post('/api/products', formData)
+      await request.post('/products', formData)
       ElMessage.success('创建成功')
     }
     dialogVisible.value = false
@@ -468,7 +468,7 @@ async function handleDelete(row: Product): Promise<void> {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await request.delete(`/api/products/${row.id}`)
+    await request.delete(`/products/${row.id}`)
     ElMessage.success('删除成功')
     loadProducts()
   } catch (error: unknown) {
@@ -484,7 +484,7 @@ async function handleThingModel(row: Product): Promise<void> {
   currentProductId.value = row.id
   thingModelTab.value = 'properties'
   try {
-    const data = await request.get(`/api/products/${row.id}/thing-model`)
+    const data = await request.get(`/products/${row.id}/thing-model`)
     thingModelData.properties = data?.properties || []
     thingModelData.events = data?.events || []
     thingModelData.services = data?.services || []
@@ -552,7 +552,7 @@ async function handleSaveThingModel(): Promise<void> {
       events: thingModelData.events.filter(e => e.identifier && e.name),
       services: thingModelData.services.filter(s => s.identifier && s.name)
     }
-    await request.put(`/api/products/${currentProductId.value}/thing-model`, payload)
+    await request.put(`/products/${currentProductId.value}/thing-model`, payload)
     ElMessage.success('物模型保存成功')
     thingModelDialogVisible.value = false
   } catch (error: unknown) {

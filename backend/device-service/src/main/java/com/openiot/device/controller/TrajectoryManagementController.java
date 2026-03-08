@@ -2,6 +2,8 @@ package com.openiot.device.controller;
 
 import com.openiot.common.core.result.ApiResponse;
 import com.openiot.device.entity.DeviceTrajectory;
+import com.openiot.device.service.DeviceTrajectoryService;
+import com.openiot.device.service.DeviceTrajectoryService.*;
 import com.openiot.device.service.DeviceTrajectoryStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,9 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 设备轨迹管理控制器
- *
- * 负责轨迹上报、存储等写操作
+ * 设备轨迹控制器
+ * 统一管理设备轨迹上报（写操作）和历史统计分析（读操作）
  *
  * @author OpenIoT Team
  */
@@ -26,10 +27,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/devices/{deviceId}/trajectory")
 @RequiredArgsConstructor
-@Tag(name = "设备轨迹上报", description = "设备轨迹上报和存储接口")
+@Tag(name = "设备轨迹", description = "设备轨迹上报、查询和统计分析接口")
 public class TrajectoryManagementController {
 
     private final DeviceTrajectoryStorageService trajectoryStorageService;
+    private final DeviceTrajectoryService trajectoryService;
 
     /**
      * 上报设备轨迹点
@@ -211,6 +213,58 @@ public class TrajectoryManagementController {
         }
 
         return ApiResponse.success(statistics);
+    }
+
+    // ==================== 统计分析接口 ====================
+
+    /**
+     * 查询设备数据统计
+     */
+    @GetMapping("/statistics")
+    @Operation(summary = "数据统计", description = "查询指定时间范围内的数据统计信息")
+    public ApiResponse<DataStatisticsVO> getStatistics(
+            @Parameter(description = "设备ID") @PathVariable Long deviceId,
+            @Parameter(description = "开始时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @Parameter(description = "结束时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+
+        log.info("查询设备数据统计: deviceId={}, startTime={}, endTime={}", deviceId, startTime, endTime);
+        DataStatisticsVO statistics = trajectoryService.getStatistics(deviceId, startTime, endTime);
+        return ApiResponse.success(statistics);
+    }
+
+    /**
+     * 查询数据趋势
+     */
+    @GetMapping("/trend")
+    @Operation(summary = "数据趋势", description = "查询属性值随时间的变化趋势")
+    public ApiResponse<List<TrendPointVO>> getTrend(
+            @Parameter(description = "设备ID") @PathVariable Long deviceId,
+            @Parameter(description = "属性标识符") @RequestParam String property,
+            @Parameter(description = "开始时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @Parameter(description = "结束时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @Parameter(description = "时间间隔（分钟）") @RequestParam(defaultValue = "5") int interval) {
+
+        log.info("查询设备数据趋势: deviceId={}, property={}, interval={}min", deviceId, property, interval);
+        List<TrendPointVO> trend = trajectoryService.getTrend(deviceId, property, startTime, endTime, interval);
+        return ApiResponse.success(trend);
+    }
+
+    /**
+     * 查询数据分布
+     */
+    @GetMapping("/distribution")
+    @Operation(summary = "数据分布", description = "查询属性值的分布情况")
+    public ApiResponse<List<DistributionBucketVO>> getDistribution(
+            @Parameter(description = "设备ID") @PathVariable Long deviceId,
+            @Parameter(description = "属性标识符") @RequestParam String property,
+            @Parameter(description = "开始时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @Parameter(description = "结束时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @Parameter(description = "分桶数量") @RequestParam(defaultValue = "10") int buckets) {
+
+        log.info("查询设备数据分布: deviceId={}, property={}, buckets={}", deviceId, property, buckets);
+        List<DistributionBucketVO> distribution = trajectoryService.getDistribution(
+                deviceId, property, startTime, endTime, buckets);
+        return ApiResponse.success(distribution);
     }
 
     /**

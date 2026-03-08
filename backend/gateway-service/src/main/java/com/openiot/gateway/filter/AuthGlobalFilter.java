@@ -79,11 +79,16 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             String tenantId = (String) session.get("tenantId");
             String role = (String) session.get("role");
 
-            ServerHttpRequest newRequest = request.mutate()
-                    .header("X-Tenant-Id", tenantId != null ? tenantId : "")
-                    .header("X-User-Id", userId)
-                    .header("X-User-Role", role != null ? role : "")
-                    .build();
+            // 只注入有值的 header，避免空字符串传递到下游引发解析异常
+            ServerHttpRequest.Builder requestBuilder = request.mutate()
+                    .header("X-User-Id", userId);
+            if (tenantId != null && !tenantId.isEmpty()) {
+                requestBuilder.header("X-Tenant-Id", tenantId);
+            }
+            if (role != null && !role.isEmpty()) {
+                requestBuilder.header("X-User-Role", role);
+            }
+            ServerHttpRequest newRequest = requestBuilder.build();
 
             log.debug("认证成功: path={}, tenantId={}, userId={}", path, tenantId, userId);
             return chain.filter(exchange.mutate().request(newRequest).build());

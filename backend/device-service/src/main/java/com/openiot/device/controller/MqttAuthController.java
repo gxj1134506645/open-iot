@@ -17,14 +17,14 @@ import java.util.Map;
  *
  * EMQX Rule Engine 配置示例：
  * 当设备连接时，EMQX 会调用此接口进行认证
- * 请求格式：POST /api/device/mqtt/auth
+ * 请求格式：POST /api/v1/mqtt/auth
  * 请求体：{"username": "deviceCode", "password": "deviceToken", "clientid": "clientId"}
  *
  * @author OpenIoT Team
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/device/mqtt")
+@RequestMapping("/api/v1/mqtt")
 @RequiredArgsConstructor
 public class MqttAuthController {
 

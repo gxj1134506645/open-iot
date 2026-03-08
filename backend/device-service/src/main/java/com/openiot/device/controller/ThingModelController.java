@@ -20,7 +20,7 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/products/{productId}/thing-model")
+@RequestMapping("/api/v1/products/{productId}/thing-model")
 @RequiredArgsConstructor
 @Tag(name = "物模型管理", description = "产品物模型 CRUD 接口")
 public class ThingModelController {

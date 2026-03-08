@@ -230,7 +230,7 @@ function goBack(): void {
 async function loadProduct(): Promise<void> {
   try {
     loading.value = true
-    const data = await request.get(`/api/products/${productId.value}`)
+    const data = await request.get(`/products/${productId.value}`)
     Object.assign(product, data)
     // 加载物模型
     if (data.thingModel) {
@@ -249,7 +249,7 @@ async function loadProduct(): Promise<void> {
 async function loadDevices(): Promise<void> {
   try {
     devicesLoading.value = true
-    const data = await request.get(`/api/products/${productId.value}/devices`)
+    const data = await request.get(`/products/${productId.value}/devices`)
     devices.value = data || []
   } catch {
     devices.value = []
