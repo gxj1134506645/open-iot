@@ -34,7 +34,7 @@ public class DeadLetterHandler {
     public void handleDeviceDataDlt(
             @Payload String message,
             @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage,
-            @Header(KafkaHeaders.EXCEPTION_CLASS) String exceptionClass,
+            @Header(KafkaHeaders.EXCEPTION_FQCN) String exceptionClass,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.OFFSET) long offset) {
 
@@ -51,7 +51,7 @@ public class DeadLetterHandler {
     public void handleDeviceStatusChangeDlt(
             @Payload String message,
             @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage,
-            @Header(KafkaHeaders.EXCEPTION_CLASS) String exceptionClass,
+            @Header(KafkaHeaders.EXCEPTION_FQCN) String exceptionClass,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         log.error("设备状态变化死信消息: topic={}, exception={}, message={}",
@@ -67,7 +67,7 @@ public class DeadLetterHandler {
     public void handleDevicePropertyChangeDlt(
             @Payload String message,
             @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage,
-            @Header(KafkaHeaders.EXCEPTION_CLASS) String exceptionClass,
+            @Header(KafkaHeaders.EXCEPTION_FQCN) String exceptionClass,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         log.error("设备属性变化死信消息: topic={}, exception={}, message={}",
@@ -83,7 +83,7 @@ public class DeadLetterHandler {
     public void handleDeviceEventDlt(
             @Payload String message,
             @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage,
-            @Header(KafkaHeaders.EXCEPTION_CLASS) String exceptionClass,
+            @Header(KafkaHeaders.EXCEPTION_FQCN) String exceptionClass,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
         log.error("设备事件死信消息: topic={}, exception={}, message={}",

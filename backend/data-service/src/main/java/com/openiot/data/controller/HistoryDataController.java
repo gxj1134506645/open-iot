@@ -65,8 +65,8 @@ public class HistoryDataController {
             @Parameter(description = "属性标识符") @RequestParam String property,
             @Parameter(description = "开始时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @Parameter(description = "结束时间") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
-            @Parameter(description = "聚合窗口", defaultValue = "5m") @RequestParam(defaultValue = "5m") String window,
-            @Parameter(description = "聚合函数", defaultValue = "mean") @RequestParam(defaultValue = "mean") String function) {
+            @Parameter(description = "聚合窗口") @RequestParam(defaultValue = "5m") String window,
+            @Parameter(description = "聚合函数") @RequestParam(defaultValue = "mean") String function) {
 
         log.info("查询设备属性聚合: deviceId={}, property={}, window={}, function={}",
                 deviceId, property, window, function);

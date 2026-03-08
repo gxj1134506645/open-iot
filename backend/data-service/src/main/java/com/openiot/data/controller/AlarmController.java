@@ -118,7 +118,7 @@ public class AlarmController {
 
         AlarmRule rule = ruleMapper.selectById(id);
         if (rule == null) {
-            return ApiResponse.fail("告警规则不存在");
+            return ApiResponse.error("告警规则不存在");
         }
 
         if (request.getRuleName() != null) {
@@ -169,7 +169,7 @@ public class AlarmController {
     public ApiResponse<Void> deleteRule(@Parameter(description = "规则ID") @PathVariable Long id) {
         AlarmRule rule = ruleMapper.selectById(id);
         if (rule == null) {
-            return ApiResponse.fail("告警规则不存在");
+            return ApiResponse.error("告警规则不存在");
         }
 
         rule.setDelFlag("1");
@@ -190,7 +190,7 @@ public class AlarmController {
 
         AlarmRule rule = ruleMapper.selectById(id);
         if (rule == null) {
-            return ApiResponse.fail("告警规则不存在");
+            return ApiResponse.error("告警规则不存在");
         }
 
         rule.setStatus(status);
@@ -256,7 +256,7 @@ public class AlarmController {
 
         AlarmRecord record = recordMapper.selectById(id);
         if (record == null) {
-            return ApiResponse.fail("告警记录不存在");
+            return ApiResponse.error("告警记录不存在");
         }
 
         record.setAlarmStatus("acknowledged");
@@ -280,7 +280,7 @@ public class AlarmController {
 
         AlarmRecord record = recordMapper.selectById(id);
         if (record == null) {
-            return ApiResponse.fail("告警记录不存在");
+            return ApiResponse.error("告警记录不存在");
         }
 
         record.setAlarmStatus("closed");
@@ -301,7 +301,7 @@ public class AlarmController {
             @Parameter(description = "处理备注") @RequestParam(required = false) String remark) {
 
         if (ids == null || ids.isEmpty()) {
-            return ApiResponse.fail("告警记录ID列表不能为空");
+            return ApiResponse.error("告警记录ID列表不能为空");
         }
 
         for (Long id : ids) {

@@ -34,7 +34,7 @@ public class DeviceEventPublisher {
     @KafkaListener(topics = "device-data", groupId = "sse-publisher-group")
     public void onDeviceData(@Payload String message,
                              @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-                             @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
+                             @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                              @Header(KafkaHeaders.OFFSET) long offset) {
         log.debug("收到设备数据: topic={}, partition={}, offset={}", topic, partition, offset);
 

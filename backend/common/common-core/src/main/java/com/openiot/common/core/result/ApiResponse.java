@@ -89,6 +89,13 @@ public class ApiResponse<T> implements Serializable {
     }
 
     /**
+     * 失败响应（fail 是 error 的别名）
+     */
+    public static <T> ApiResponse<T> fail(String msg) {
+        return error(msg);
+    }
+
+    /**
      * 失败响应（带状态码）
      */
     public static <T> ApiResponse<T> error(Integer code, String msg) {

@@ -85,6 +85,52 @@
         <bucket4j.version>8.7.0</bucket4j.version>
     </properties>
 
+    <!-- 仓库配置 -->
+    <repositories>
+        <!-- GraalVM 专用仓库 - 不走国内镜像 -->
+        <repository>
+            <id>graalvm-releases</id>
+            <name>GraalVM Releases</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>maven-central</id>
+            <name>Maven Central Backup</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>huaweicloud</id>
+            <name>Huawei Cloud</name>
+            <url>https://repo.huaweicloud.com/repository/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <!-- 依赖管理 -->
     <dependencyManagement>
         <dependencies>
@@ -231,9 +277,8 @@
             </dependency>
             <dependency>
                 <groupId>org.graalvm.js</groupId>
-                <artifactId>js</artifactId>
+                <artifactId>js-language</artifactId>
                 <version>${graaljs.version}</version>
-                <type>pom</type>
             </dependency>
 
             <!-- Aviator - Expression Engine -->

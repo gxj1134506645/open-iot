@@ -102,7 +102,7 @@ public class DataForwardController {
 
         DataForwardConfig config = configMapper.selectById(id);
         if (config == null) {
-            return ApiResponse.fail("转发配置不存在");
+            return ApiResponse.error("转发配置不存在");
         }
 
         if (request.getConfigName() != null) {
@@ -147,7 +147,7 @@ public class DataForwardController {
     public ApiResponse<Void> deleteConfig(@Parameter(description = "配置ID") @PathVariable Long id) {
         DataForwardConfig config = configMapper.selectById(id);
         if (config == null) {
-            return ApiResponse.fail("转发配置不存在");
+            return ApiResponse.error("转发配置不存在");
         }
 
         config.setDelFlag("1");
@@ -168,7 +168,7 @@ public class DataForwardController {
 
         DataForwardConfig config = configMapper.selectById(id);
         if (config == null) {
-            return ApiResponse.fail("转发配置不存在");
+            return ApiResponse.error("转发配置不存在");
         }
 
         config.setStatus(status);

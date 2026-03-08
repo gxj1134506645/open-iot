@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * 统一事件信封
@@ -88,5 +89,25 @@ public class EventEnvelope implements Serializable {
      */
     public String getKafkaKey() {
         return tenantId + ":" + deviceId;
+    }
+
+    /**
+     * 获取设备编码（deviceId 的别名）
+     */
+    public String getDeviceCode() {
+        return deviceId;
+    }
+
+    /**
+     * 获取产品ID（从 payload 中提取，如果存在）
+     */
+    @SuppressWarnings("unchecked")
+    public String getProductId() {
+        // payload 可能是 Map 类型
+        if (payload instanceof Map) {
+            Object productId = ((Map<?, ?>) payload).get("productId");
+            return productId != null ? productId.toString() : null;
+        }
+        return null;
     }
 }
