@@ -1,6 +1,7 @@
 package com.openiot.device.controller;
 
 import com.openiot.device.entity.Device;
+import com.openiot.device.service.DeviceStatusService;
 import com.openiot.device.service.DeviceTokenService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import java.util.Map;
  * 当设备连接时，EMQX 会调用此接口进行认证
  * 请求格式：POST /api/device/mqtt/auth
  * 请求体：{"username": "deviceCode", "password": "deviceToken", "clientid": "clientId"}
+ *
+ * @author OpenIoT Team
  */
 @Slf4j
 @RestController
@@ -26,6 +29,7 @@ import java.util.Map;
 public class MqttAuthController {
 
     private final DeviceTokenService deviceTokenService;
+    private final DeviceStatusService deviceStatusService;
 
     /**
      * MQTT 设备认证接口
@@ -73,7 +77,7 @@ public class MqttAuthController {
 
     /**
      * MQTT 设备连接成功回调
-     * 可用于记录设备上线状态
+     * 更新设备上线状态
      *
      * @param request 连接信息
      * @return 处理结果
@@ -82,8 +86,8 @@ public class MqttAuthController {
     public Map<String, Object> onConnected(@RequestBody MqttConnectedRequest request) {
         log.info("MQTT 设备已连接: clientId={}, username={}", request.getClientid(), request.getUsername());
 
-        // TODO: 更新设备在线状态到 Redis 或数据库
-        // deviceStatusService.setOnline(request.getUsername(), request.getClientid());
+        // 更新设备在线状态
+        deviceStatusService.setOnline(request.getUsername(), request.getClientid());
 
         Map<String, Object> result = new HashMap<>();
         result.put("result", "ok");
@@ -92,7 +96,7 @@ public class MqttAuthController {
 
     /**
      * MQTT 设备断开连接回调
-     * 可用于记录设备离线状态
+     * 更新设备离线状态
      *
      * @param request 断开信息
      * @return 处理结果
@@ -101,8 +105,8 @@ public class MqttAuthController {
     public Map<String, Object> onDisconnected(@RequestBody MqttDisconnectedRequest request) {
         log.info("MQTT 设备已断开: clientId={}, username={}", request.getClientid(), request.getUsername());
 
-        // TODO: 更新设备离线状态
-        // deviceStatusService.setOffline(request.getUsername());
+        // 更新设备离线状态
+        deviceStatusService.setOffline(request.getUsername());
 
         Map<String, Object> result = new HashMap<>();
         result.put("result", "ok");

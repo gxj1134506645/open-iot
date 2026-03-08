@@ -25,9 +25,24 @@ public class Device {
     private Long tenantId;
 
     /**
+     * 产品ID
+     */
+    private Long productId;
+
+    /**
      * 设备编码
      */
     private String deviceCode;
+
+    /**
+     * 设备密钥（全局唯一）
+     */
+    private String deviceKey;
+
+    /**
+     * 设备密钥（BCrypt哈希）
+     */
+    private String deviceSecret;
 
     /**
      * 设备名称

@@ -117,6 +117,20 @@ openiot:
       mongodb-enabled: true
       kafka-enabled: true
 
+# InfluxDB 时序数据库配置
+influxdb:
+  enabled: true
+  url: http://localhost:8086
+  token: admin-token
+  org: openiot
+  bucket: device-data
+  connect-timeout: 10000
+  write-timeout: 10000
+  read-timeout: 30000
+  batch-size: 1000
+  flush-interval: 5000
+  gzip-enabled: true
+
 # 日志配置
 logging:
   config: classpath:logback-spring.xml

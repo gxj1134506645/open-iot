@@ -4,8 +4,6 @@
 # 用法: docker-compose -f docker-compose.yml -f docker-compose.observability.yml up -d
 # ========================================
 
-version: '3.8'
-
 services:
   # ========================================
   # Prometheus - 指标采集和存储

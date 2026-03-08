@@ -37,13 +37,19 @@ spring:
         - id: device-service
           uri: lb://device-service
           predicates:
-            - Path=/api/v1/devices/**
+            - Path=/api/v1/devices/**,/api/products/**,/api/v1/products/**
           filters:
             - StripPrefix=0
         - id: data-service
           uri: lb://data-service
           predicates:
             - Path=/api/v1/data/**,/api/v1/replay/**,/api/v1/sse/**
+          filters:
+            - StripPrefix=0
+        - id: rule-service
+          uri: lb://rule-service
+          predicates:
+            - Path=/api/v1/parse-rules/**,/api/v1/mapping-rules/**,/api/v1/forward-rules/**,/api/v1/alarm-rules/**
           filters:
             - StripPrefix=0
 

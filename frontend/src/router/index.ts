@@ -32,6 +32,36 @@ const routes = [
         name: 'Tenants',
         component: () => import('@/views/tenant/TenantList.vue'),
         meta: { requiresAdmin: true }
+      },
+      {
+        path: 'product',
+        name: 'ProductList',
+        component: () => import('@/views/product/ProductList.vue')
+      },
+      {
+        path: 'product/:id',
+        name: 'ProductDetail',
+        component: () => import('@/views/product/ProductDetail.vue')
+      },
+      {
+        path: 'devices',
+        name: 'Devices',
+        component: () => import('@/views/device/DeviceList.vue')
+      },
+      {
+        path: 'devices/:id',
+        name: 'DeviceDetail',
+        component: () => import('@/views/device/DeviceDetail.vue')
+      },
+      {
+        path: 'alerts',
+        name: 'Alerts',
+        component: () => import('@/views/alert/AlertList.vue')
+      },
+      {
+        path: 'rules',
+        name: 'Rules',
+        component: () => import('@/views/rule/RuleList.vue')
       }
     ]
   }

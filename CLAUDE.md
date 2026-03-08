@@ -3,6 +3,7 @@
 Auto-generated from all feature plans. Last updated: 2026-02-25
 
 ## Active Technologies
+- JDK 21 (LTS，支持虚拟线程) + Spring Boot 3.2.3 (003-iot-core-platform)
 
 ### 后端
 - JDK 21 (LTS，支持虚拟线程) + Spring Boot 3.x, Spring Cloud Alibaba, Kafka, Netty, MyBatis Plus, Sa-Token
@@ -10,9 +11,12 @@ Auto-generated from all feature plans. Last updated: 2026-02-25
 - 分布式事务：Alibaba Seata（AT 模式）
 
 ### 前端
-- Vue 3 + Vite + Element Plus
-- UI设计工具：UI/UX Pro Max skill（已安装）
+- Vue 3 + Vite + TypeScript
+- UI 框架：Element Plus
+- CSS 框架：Tailwind CSS
 - 状态管理：Pinia
+- HTTP 客户端：Axios
+- UI设计工具：UI/UX Pro Max skill（已安装）
 
 ## Project Structure
 
@@ -31,32 +35,137 @@ tests/
 # UI设计：使用UI/UX Pro Max skill进行前端界面设计和代码生成
 # 启动前端开发服务器：cd frontend && npm run dev
 
+---
+
+## 前后端联调规范
+
+### 架构原则
+
+**所有前后端联调 MUST 通过 Gateway 网关服务进行路由，禁止直接调用后端微服务。**
+
+```
+┌─────────┐      ┌─────────┐      ┌─────────────────┐
+│  前端    │ ──→  │ Gateway │ ──→  │  后端微服务集群   │
+│  Vue3   │      │  网关   │      │ tenant/device/  │
+└─────────┘      └─────────┘      └─────────────────┘
+```
+
+### 为什么必须走网关
+
+1. **统一认证**：Gateway 统一处理 Sa-Token 认证，注入租户信息到请求头
+2. **路由分发**：Gateway 负责将请求路由到正确的微服务
+3. **租户隔离**：Gateway 自动注入 `X-Tenant-Id`、`X-User-Id`、`X-User-Role` 请求头
+4. **安全防护**：Gateway 提供统一的 API 网关安全策略
+
+### 开发环境配置
+
+#### 前端代理配置 (vite.config.ts)
+
+```typescript
+export default defineConfig({
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',  // Gateway 地址
+        changeOrigin: true,
+        rewrite: (path) => path
+      }
+    }
+  }
+})
+```
+
+#### Gateway 路由配置
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: tenant-service
+          uri: lb://tenant-service
+          predicates:
+            - Path=/api/v1/auth/**,/api/v1/tenants/**,/api/v1/users/**
+        - id: device-service
+          uri: lb://device-service
+          predicates:
+            - Path=/api/v1/products/**,/api/v1/devices/**
+```
+
+### 请求流程
+
+```
+1. 前端发起请求 → /api/v1/products
+2. Vite 代理转发 → http://localhost:8080/api/v1/products
+3. Gateway 认证  → 验证 Sa-Token，解析用户信息
+4. Gateway 注入  → 添加 X-Tenant-Id, X-User-Id, X-User-Role 请求头
+5. Gateway 路由  → 转发到 device-service
+6. 后端处理     → TenantContextFilter 从请求头读取租户信息
+```
+
+### 禁止事项
+
+- ❌ 前端直接调用 `http://localhost:8081/api/products`（绕过 Gateway）
+- ❌ 前端直接调用 `http://localhost:8086/api/v1/auth/login`（绕过 Gateway）
+- ❌ 在生产环境暴露微服务端口（只暴露 Gateway 端口）
+
+### 端口规划
+
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| Gateway | 8080 | 唯一对外暴露的端口 |
+| tenant-service | 8086 | 内部服务，不对外 |
+| device-service | 8081 | 内部服务，不对外 |
+| data-service | 8082 | 内部服务，不对外 |
+| connect-service | 8083 | 内部服务，不对外 |
+| rule-service | 8084 | 内部服务，不对外 |
+| 前端 (dev) | 5173 | Vite 开发服务器 |
+
 ## Code Style
 
 JDK 21 (LTS，支持虚拟线程): Follow standard conventions
 
 ## Recent Changes
+- 003-iot-core-platform: Added JDK 21 (LTS，支持虚拟线程) + Spring Boot 3.2.3
 
 - 001-mvp-core: Added JDK 21 (LTS，支持虚拟线程) + Spring Boot 3.x, Spring Cloud Alibaba, Kafka, Netty, MyBatis Plus, Sa-Token
 
 <!-- MANUAL ADDITIONS START -->
 
-## 数据库迁移规范（Flyway）
+## 数据库架构设计
 
-### 架构设计
+### 独立数据库架构
 
-**共享数据库 + 集中式迁移管理**
+本项目采用**独立数据库架构**，每个微服务拥有独立的 PostgreSQL 数据库：
 
-本项目采用**共享数据库**架构，所有微服务共享同一个 PostgreSQL 数据库：
-- **数据库名**：`openiot`
-- **迁移管理服务**：`tenant-service`（唯一启用 Flyway 的服务）
-- **其他服务**：`device-service`、`data-service`（禁用 Flyway，仅做 CRUD 操作）
+| 服务 | 数据库名 | 说明 |
+|------|---------|------|
+| tenant-service | `openiot_tenant` | 租户、用户、RBAC 权限表 |
+| device-service | `openiot_device` | 设备、产品、属性、事件、服务调用表 |
+| data-service | `openiot_data` | 设备轨迹、历史数据表 |
+| connect-service | `openiot_connect` | 设备连接会话表 |
+
+每个服务独立管理自己的 Flyway 迁移脚本，位于 `src/main/resources/db/migration/` 目录。
+
+### PostgreSQL MCP 配置
+
+项目已配置 PostgreSQL MCP 服务，支持直接通过 MCP 操作数据库：
+
+- **mcp__postgres-tenant__query**: 操作 `openiot_tenant` 数据库
+- **mcp__postgres-device__query**: 操作 `openiot_device` 数据库
+- **mcp__postgres-data__query**: 操作 `openiot_data` 数据库
+- **mcp__postgres-connect__query**: 操作 `openiot_connect` 数据库
+
+**使用示例**：
+```
+# 查询设备数据库中的表
+mcp__postgres-device__query: "SELECT * FROM device LIMIT 10"
+```
 
 ### Flyway 配置规范
 
-#### **tenant-service（数据库迁移管理服务）**
-
-✅ **启用 Flyway**，负责统一管理所有业务表的 DDL：
+每个服务独立配置 Flyway：
 
 ```yaml
 # application.yml
@@ -64,30 +173,7 @@ spring.flyway:
   enabled: true
   locations: classpath:db/migration
   baseline-on-migrate: true
-  validate-on-migrate: true
-  out-of-order: false  # 禁止乱序执行
 ```
-
-**迁移脚本位置**：`backend/tenant-service/src/main/resources/db/migration/`
-
-**包含的表**：
-- `tenant` - 租户表
-- `sys_user` - 系统用户表
-- `device` - 设备表
-- `device_trajectory` - 设备轨迹表
-- 其他所有业务表...
-
-#### **其他服务（device-service、data-service）**
-
-❌ **禁用 Flyway**，避免重复迁移导致冲突：
-
-```yaml
-# application.yml
-spring.flyway:
-  enabled: false
-```
-
-这些服务只负责 CRUD 操作，不执行数据库迁移。
 
 ### 迁移脚本命名规范
 
@@ -520,4 +606,224 @@ update code
 fix bug
 修改了一些东西
 ```
+
+### Phase 完成提交规范
+
+**每个 Phase 阶段完成后 MUST 自动执行 git commit 和 push**：
+
+1. **提交时机**：Phase 的所有任务完成后，立即提交
+2. **提交内容**：包含该 Phase 的所有代码、配置、文档变更
+3. **提交格式**：遵循上述提交信息格式，标题注明 Phase 编号
+4. **自动推送**：提交后立即 push 到远程仓库
+
+**示例：**
+```
+feat: 完成 IoT 平台核心功能 Phase 2-3
+
+Phase 2: 基础架构层
+- 添加 GraalJS、Aviator、InfluxDB 依赖
+- 创建 rule-service 模块
+- 创建实体类和 Mapper 接口
+
+Phase 3: 产品-设备层级管理
+- ProductService：产品 CRUD
+- ProductController：REST API
+- DeviceService 增强：产品关联、设备认证
+```
+
+**流程：**
+1. Phase 任务全部完成 → 2. git add . → 3. git commit → 4. git push
+
+---
+
+## IoT 平台核心功能
+
+### 规则引擎
+
+#### 解析规则
+
+解析规则用于将设备上报的原始数据（二进制、十六进制、自定义格式）转换为标准 JSON 格式。
+
+**支持的脚本类型：**
+- **JavaScript (GraalJS)**：使用 JavaScript 语法编写解析脚本
+- **Aviator 表达式**：轻量级表达式引擎，适合简单数据转换
+
+**解析规则配置示例：**
+```javascript
+// JavaScript 解析脚本示例
+function parse(payload, metadata) {
+    // payload: 原始数据（Buffer 或字符串）
+    // metadata: 元数据（设备信息、产品信息等）
+
+    // 解析二进制数据
+    var temperature = payload.readInt8(0);
+    var humidity = payload.readUInt8(1);
+
+    // 返回标准格式
+    return {
+        temperature: temperature / 10.0,
+        humidity: humidity,
+        deviceId: metadata.deviceId,
+        timestamp: Date.now()
+    };
+}
+```
+
+**Aviator 表达式示例：**
+```java
+// 简单表达式：temperature * 0.1
+// 条件表达式：temperature > 50 ? 'high' : 'normal'
+```
+
+#### 映射规则
+
+映射规则用于将解析后的数据映射到物模型定义的属性、事件。
+
+**映射规则配置示例：**
+```json
+{
+  "propertyMappings": [
+    {
+      "sourceField": "temperature",
+      "targetProperty": "Temperature",
+      "dataType": "double",
+      "transformExpression": "value / 10.0"
+    },
+    {
+      "sourceField": "humidity",
+      "targetProperty": "Humidity",
+      "dataType": "int"
+    }
+  ],
+  "eventMappings": [
+    {
+      "sourceField": "alarmCode",
+      "targetEvent": "AlarmEvent",
+      "conditionExpression": "alarmCode != 0"
+    }
+  ]
+}
+```
+
+### 设备服务调用
+
+设备服务调用允许平台主动调用设备定义的服务（如开关、重启、配置下发等）。
+
+**调用方式：**
+- **同步调用**：阻塞等待设备响应，最多等待 30 秒
+- **异步调用**：立即返回 invokeId，通过 invokeId 查询执行结果
+
+**API 接口：**
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/devices/{id}/services/{serviceIdentifier}` | POST | 异步调用设备服务 |
+| `/api/v1/devices/{id}/services/{serviceIdentifier}/sync` | POST | 同步调用设备服务 |
+| `/api/v1/devices/service-invocations/{invocationId}` | GET | 查询调用状态 |
+
+**调用请求示例：**
+```json
+{
+  "inputParams": {
+    "speed": 100,
+    "direction": "forward"
+  },
+  "invokeType": "async",
+  "timeout": 30
+}
+```
+
+**调用状态：**
+- `pending`：待处理
+- `calling`：调用中
+- `success`：成功
+- `failed`：失败
+- `timeout`：超时
+
+### 告警管理
+
+告警管理提供告警规则配置、告警触发、告警处理等功能。
+
+**告警级别：**
+- `info`：信息告警
+- `warning`：警告告警
+- `critical`：严重告警
+- `emergency`：紧急告警
+
+**告警状态：**
+- `pending`：待处理
+- `processing`：处理中
+- `resolved`：已解决
+- `ignored`：已忽略
+
+**API 接口：**
+
+| 接口 | 方法 | 描述 |
+|------|------|------|
+| `/api/v1/alerts` | GET | 分页查询告警列表 |
+| `/api/v1/alerts/{alertId}` | GET | 查询告警详情 |
+| `/api/v1/alerts/{alertId}/handle` | PUT | 处理告警 |
+| `/api/v1/alerts/batch-handle` | PUT | 批量处理告警 |
+| `/api/v1/alerts/statistics` | GET | 告警统计 |
+| `/api/v1/alerts/pending` | GET | 查询待处理告警 |
+
+### InfluxDB 时序数据存储
+
+设备上报的属性数据、状态数据使用 InfluxDB 进行时序存储。
+
+**数据模型：**
+- `DevicePropertyPoint`：设备属性数据点
+- `DeviceStatusPoint`：设备状态数据点
+- `DeviceEventPoint`：设备事件数据点
+
+**查询接口：**
+```java
+// 查询设备属性历史数据
+List<DevicePropertyPoint> queryProperties(
+    String deviceId,
+    String propertyIdentifier,
+    Instant start,
+    Instant end
+);
+```
+
+### API 限流配置
+
+为防止恶意请求和系统过载，所有 API 接口默认启用基于 IP 的限流保护。
+
+**配置项：**
+```yaml
+openiot:
+  rate-limit:
+    enabled: true                     # 是否启用限流
+    permits-per-second: 10            # 每个 IP 每秒最多请求数
+    cache-expire-minutes: 10          # IP 缓存过期时间（分钟）
+```
+
+**限流响应：**
+- HTTP 状态码：429 Too Many Requests
+- 响应头：
+  - `X-RateLimit-Limit`：每秒最大请求数
+  - `X-RateLimit-Remaining`：剩余请求数
+  - `Retry-After`：建议重试等待时间（秒）
+
+### Swagger API 文档
+
+所有服务提供 Swagger UI 在线 API 文档。
+
+**访问地址：**
+- Device Service: `http://localhost:8081/swagger-ui.html`
+- Gateway Service: `http://localhost:8080/swagger-ui.html`
+
+**API 分组：**
+1. 产品管理
+2. 设备管理
+3. 物模型管理
+4. 设备控制
+5. 告警管理
+6. 规则引擎
+7. 实时推送（SSE）
+8. 数据重放
+9. 设备轨迹
+
 <!-- MANUAL ADDITIONS END -->

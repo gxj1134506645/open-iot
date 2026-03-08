@@ -1,0 +1,109 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: rule-service
+  profiles:
+    active: dev  # 默认激活开发环境
+
+  # Nacos 配置（公共）
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+        namespace: public
+        enabled: false
+
+  # 数据源驱动（公共）
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+# Flyway 配置（独立数据库架构）
+# 说明：rule-service 使用独立的 openiot_rule 数据库
+# 包含：parse_rule、mapping_rule、forward_rule、alarm_rule 等规则相关表
+spring.flyway:
+  enabled: false  # 规则表由 device-service 管理，此处禁用
+
+  # Kafka 配置（公共）
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: rule-service
+      auto-offset-reset: earliest
+
+# MyBatis Plus 配置（公共）
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-field: deleteFlag
+      logic-delete-value: '1'
+      logic-not-delete-value: '0'
+
+# Sa-Token 配置（公共）
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: true
+  is-share: true
+  token-style: uuid
+  is-log: false
+
+# Actuator 配置（公共）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+  health:
+    liveness:
+      enabled: true
+    readiness:
+      enabled: true
+
+# 可观测性配置（公共）
+openiot:
+  observability:
+    tracing:
+      enabled: true
+    logging:
+      tenant-mdc: true
+    metrics:
+      business-enabled: true
+      hikari-enabled: true
+      redis-enabled: true
+
+# 日志配置（指定使用 logback-spring.xml）
+logging:
+  config: classpath:logback-spring.xml

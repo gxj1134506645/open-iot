@@ -25,6 +25,7 @@
         <module>connect-service</module>
         <module>data-service</module>
         <module>tenant-service</module>
+        <module>rule-service</module>
     </modules>
 
     <!-- 版本管理 -->
@@ -73,6 +74,15 @@
 
         <!-- 测试 -->
         <testcontainers.version>1.19.5</testcontainers.version>
+
+        <!-- IoT Platform Core -->
+        <graaljs.version>23.1.2</graaljs.version>
+        <aviator.version>5.4.1</aviator.version>
+        <influxdb-client.version>6.10.0</influxdb-client.version>
+
+        <!-- API 限流 -->
+        <guava.version>33.0.0-jre</guava.version>
+        <bucket4j.version>8.7.0</bucket4j.version>
     </properties>
 
     <!-- 依赖管理 -->
@@ -211,6 +221,47 @@
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-redis-jackson</artifactId>
                 <version>${sa-token.version}</version>
+            </dependency>
+
+            <!-- GraalJS - JavaScript Script Engine -->
+            <dependency>
+                <groupId>org.graalvm.polyglot</groupId>
+                <artifactId>polyglot</artifactId>
+                <version>${graaljs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.graalvm.js</groupId>
+                <artifactId>js</artifactId>
+                <version>${graaljs.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- Aviator - Expression Engine -->
+            <dependency>
+                <groupId>com.googlecode.aviator</groupId>
+                <artifactId>aviator</artifactId>
+                <version>${aviator.version}</version>
+            </dependency>
+
+            <!-- InfluxDB Client -->
+            <dependency>
+                <groupId>com.influxdb</groupId>
+                <artifactId>influxdb-client-java</artifactId>
+                <version>${influxdb-client.version}</version>
+            </dependency>
+
+            <!-- Guava - RateLimiter -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <!-- Bucket4j - 分布式限流（可选，配合 Redis 使用） -->
+            <dependency>
+                <groupId>com.bucket4j</groupId>
+                <artifactId>bucket4j-core</artifactId>
+                <version>${bucket4j.version}</version>
             </dependency>
 
             <!-- Hutool -->
