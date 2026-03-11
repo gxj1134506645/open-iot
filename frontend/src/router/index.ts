@@ -88,11 +88,21 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // ===== 装饰:路由恢复逻辑 =====
+  // 登录成功后,检查是否有需要恢复的路由
+  if (to.path === '/login' && userStore.isLoggedIn) {
+    const routeToRestore = userStore.getRouteToRestore()
+    if (routeToRestore) {
+      next(routeToRestore)
+      return
+    }
+    next('/monitor')
+    return
+  }
+
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     next('/login')
   } else if (to.meta.requiresAdmin && !userStore.isAdmin) {
-    next('/monitor')
-  } else if (to.path === '/login' && userStore.isLoggedIn) {
     next('/monitor')
   } else {
     next()

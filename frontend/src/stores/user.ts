@@ -4,7 +4,7 @@ import request from '@/utils/request'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
-  // 从 localStorage 恢复用户信息，避免刷新后 isAdmin 等计算属性失效
+  // 从 localStorage 恢复用户信息,避免刷新后 isAdmin 等计算属性失效
   const userInfo = ref<any>(JSON.parse(localStorage.getItem('userInfo') || 'null'))
   const permissions = ref<string[]>(JSON.parse(localStorage.getItem('permissions') || '[]'))
 
@@ -17,7 +17,7 @@ export const useUserStore = defineStore('user', () => {
     token.value = data.token
     userInfo.value = data
     permissions.value = data.permissions || []
-    // 持久化到 localStorage，避免刷新后丢失
+    // 持久化到 localStorage,避免刷新后丢失
     localStorage.setItem('token', data.token)
     localStorage.setItem('userInfo', JSON.stringify(data))
     localStorage.setItem('permissions', JSON.stringify(data.permissions || []))
@@ -43,7 +43,7 @@ export const useUserStore = defineStore('user', () => {
     const data = await request.get('/users/me')
     userInfo.value = data
     localStorage.setItem('userInfo', JSON.stringify(data))
-    // 如果登录响应中没有权限列表，需要单独获取
+    // 如果登录响应中没有权限列表,需要单独获取
     if (!permissions.value.length && data.role) {
       await fetchPermissions()
     }
@@ -51,7 +51,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function fetchPermissions() {
-    // 权限已在登录时存储在 Session 中，这里可以从用户信息获取
+    // 权限已在登录时存储在 Session 中,这里可以从用户信息获取
     // 或者调用专门的权限接口
     permissions.value = userInfo.value?.permissions || []
   }
@@ -79,6 +79,53 @@ export const useUserStore = defineStore('user', () => {
     return required.some(r => userInfo.value?.role === r)
   }
 
+  /**
+   * 记住 token 过期时的路由
+   * @param path 当前路由路径
+   */
+  function rememberExpiredRoute(path: string) {
+    localStorage.setItem('expiredRoutePath', path)
+  }
+
+  /**
+   * 记住主动退出登录时的路由
+   * @param path 当前路由路径
+   */
+  function rememberLogoutRoute(path: string) {
+    localStorage.setItem('logoutRoutePath', path)
+  }
+
+  /**
+   * 获取需要恢复的路由(优先 token 过期时的路由)
+   * @returns 需要跳转的路由路径
+   */
+  function getRouteToRestore(): string | null {
+    // 优先恢复 token 过期时的路由
+    const expired = localStorage.getItem('expiredRoutePath')
+    if (expired) {
+      // 清空已使用的过期路由记忆
+      localStorage.removeItem('expiredRoutePath')
+      return expired
+    }
+
+    // 其次恢复主动退出时的路由
+    const logout = localStorage.getItem('logoutRoutePath')
+    if (logout) {
+      localStorage.removeItem('logoutRoutePath')
+      return logout
+    }
+
+    return null
+  }
+
+  /**
+   * 清空所有路由记忆
+   */
+  function clearRouteMemory() {
+    localStorage.removeItem('expiredRoutePath')
+    localStorage.removeItem('logoutRoutePath')
+  }
+
   return {
     token,
     userInfo,
@@ -92,6 +139,10 @@ export const useUserStore = defineStore('user', () => {
     fetchPermissions,
     hasPermission,
     hasAllPermissions,
-    hasRole
+    hasRole,
+    rememberExpiredRoute,
+    rememberLogoutRoute,
+    getRouteToRestore,
+    clearRouteMemory
   }
 })
