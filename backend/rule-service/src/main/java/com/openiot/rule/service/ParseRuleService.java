@@ -213,14 +213,17 @@ public class ParseRuleService extends ServiceImpl<ParseRuleMapper, ParseRule> {
      * @return 规则列表（按优先级降序）
      */
     public List<ParseRule> getParseRuleByProductId(Long productId) {
-        Long tenantId = getTenantId();
-
-        return lambdaQuery()
-                .eq(ParseRule::getTenantId, tenantId)
+        var query = lambdaQuery()
                 .eq(ParseRule::getProductId, productId)
-                .eq(ParseRule::getStatus, "1") // 只返回启用的规则
-                .orderByDesc(ParseRule::getPriority)
-                .list();
+                .eq(ParseRule::getStatus, "1");
+
+        // 平台管理员可查看所有数据
+        if (!TenantContext.isPlatformAdmin()) {
+            Long tenantId = getTenantId();
+            query.eq(ParseRule::getTenantId, tenantId);
+        }
+
+        return query.orderByDesc(ParseRule::getPriority).list();
     }
 
     /**
@@ -250,10 +253,16 @@ public class ParseRuleService extends ServiceImpl<ParseRuleMapper, ParseRule> {
     public Page<ParseRule> getParseRuleList(int pageNum, int pageSize,
                                             Long productId, String ruleType, String status) {
         Page<ParseRule> page = new Page<>(pageNum, pageSize);
-        Long tenantId = getTenantId();
 
-        return lambdaQuery()
-                .eq(ParseRule::getTenantId, tenantId)
+        var query = lambdaQuery();
+
+        // 平台管理员可查看所有数据，租户管理员只能查看自己租户的
+        if (!TenantContext.isPlatformAdmin()) {
+            Long tenantId = getTenantId();
+            query.eq(ParseRule::getTenantId, tenantId);
+        }
+
+        return query
                 .eq(productId != null, ParseRule::getProductId, productId)
                 .eq(ruleType != null && !ruleType.isEmpty(), ParseRule::getRuleType, ruleType)
                 .eq(status != null && !status.isEmpty(), ParseRule::getStatus, status)
@@ -682,22 +691,28 @@ public class ParseRuleService extends ServiceImpl<ParseRuleMapper, ParseRule> {
     }
 
     /**
-     * 获取当前租户ID
+     * 获取当前租户ID（平台管理员返回 null）
      */
     private Long getTenantId() {
         String tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
+            if (TenantContext.isPlatformAdmin()) {
+                return null;
+            }
             throw BusinessException.unauthorized("未找到租户信息");
         }
         return Long.valueOf(tenantId);
     }
 
     /**
-     * 检查租户访问权限
+     * 检查租户访问权限（平台管理员直接放行）
      */
     private void checkTenantAccess(ParseRule rule) {
+        if (TenantContext.isPlatformAdmin()) {
+            return;
+        }
         Long currentTenantId = getTenantId();
-        if (!currentTenantId.equals(rule.getTenantId())) {
+        if (currentTenantId != null && !currentTenantId.equals(rule.getTenantId())) {
             log.warn("跨租户访问被拒绝: current={}, target={}",
                     currentTenantId, rule.getTenantId());
             throw BusinessException.forbidden("无权访问该解析规则");

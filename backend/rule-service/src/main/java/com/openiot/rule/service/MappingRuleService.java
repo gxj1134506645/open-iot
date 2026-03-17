@@ -273,14 +273,17 @@ public class MappingRuleService extends ServiceImpl<MappingRuleMapper, MappingRu
      * @return 规则列表
      */
     public List<MappingRule> getMappingRuleByProductId(Long productId) {
-        Long tenantId = getTenantId();
-
-        return lambdaQuery()
-                .eq(MappingRule::getTenantId, tenantId)
+        var query = lambdaQuery()
                 .eq(MappingRule::getProductId, productId)
-                .eq(MappingRule::getStatus, "1") // 只返回启用的规则
-                .orderByDesc(MappingRule::getCreateTime)
-                .list();
+                .eq(MappingRule::getStatus, "1");
+
+        // 平台管理员可查看所有数据
+        if (!TenantContext.isPlatformAdmin()) {
+            Long tenantId = getTenantId();
+            query.eq(MappingRule::getTenantId, tenantId);
+        }
+
+        return query.orderByDesc(MappingRule::getCreateTime).list();
     }
 
     /**
@@ -635,22 +638,28 @@ public class MappingRuleService extends ServiceImpl<MappingRuleMapper, MappingRu
     }
 
     /**
-     * 获取当前租户ID
+     * 获取当前租户ID（平台管理员返回 null）
      */
     private Long getTenantId() {
         String tenantId = TenantContext.getTenantId();
         if (tenantId == null) {
+            if (TenantContext.isPlatformAdmin()) {
+                return null;
+            }
             throw BusinessException.unauthorized("未找到租户信息");
         }
         return Long.valueOf(tenantId);
     }
 
     /**
-     * 检查租户访问权限
+     * 检查租户访问权限（平台管理员直接放行）
      */
     private void checkTenantAccess(MappingRule rule) {
+        if (TenantContext.isPlatformAdmin()) {
+            return;
+        }
         Long currentTenantId = getTenantId();
-        if (!currentTenantId.equals(rule.getTenantId())) {
+        if (currentTenantId != null && !currentTenantId.equals(rule.getTenantId())) {
             log.warn("跨租户访问被拒绝: current={}, target={}",
                     currentTenantId, rule.getTenantId());
             throw BusinessException.forbidden("无权访问该映射规则");

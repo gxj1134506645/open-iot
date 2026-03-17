@@ -163,8 +163,17 @@ public class MappingRuleController {
      * 分页查询映射规则（内部方法）
      */
     private Page<MappingRule> getMappingRulePage(int pageNum, int pageSize, Long productId, String status) {
-        // 使用 lambdaQuery 构建分页查询
-        return mappingRuleService.lambdaQuery()
+        var query = mappingRuleService.lambdaQuery();
+
+        // 平台管理员可查看所有数据，租户管理员只能查看自己租户的
+        if (!com.openiot.common.security.context.TenantContext.isPlatformAdmin()) {
+            String tenantId = com.openiot.common.security.context.TenantContext.getTenantId();
+            if (tenantId != null) {
+                query.eq(MappingRule::getTenantId, Long.valueOf(tenantId));
+            }
+        }
+
+        return query
                 .eq(productId != null, MappingRule::getProductId, productId)
                 .eq(status != null && !status.isEmpty(), MappingRule::getStatus, status)
                 .orderByDesc(MappingRule::getCreateTime)
