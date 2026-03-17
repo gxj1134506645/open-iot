@@ -27,6 +27,25 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  build: {
+    // 代码分割优化：将大型第三方库拆分为独立 chunk，避免单个文件过大
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vue 核心生态（vue + vue-router + pinia）
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          // Element Plus UI 框架
+          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          // ECharts 图表库（按需导入，仅含 line + pie）
+          'echarts': ['echarts/core', 'echarts/charts', 'echarts/components', 'echarts/renderers'],
+          // 工具库
+          'utils': ['axios', 'dayjs', '@vueuse/core'],
+        },
+      },
+    },
+    // Element Plus 独立 chunk 约 900KB 属正常范围，不再警告
+    chunkSizeWarningLimit: 1000,
+  },
   server: {
     port: 5173,
     hmr: {

@@ -423,6 +423,27 @@
                 </executions>
             </plugin>
 
+            <!-- Maven Surefire Plugin - 测试运行配置 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <!-- 强制 JVM 使用 UTF-8 编码，解决 Windows 下中文日志乱码 -->
+                    <argLine>
+                        ${argLine}
+                        -Dfile.encoding=UTF-8
+                        -Dconsole.encoding=UTF-8
+                        -Dstdout.encoding=UTF-8
+                        -Dstderr.encoding=UTF-8
+                    </argLine>
+                    <!-- 通过环境变量确保 Maven fork 的子进程也使用 UTF-8 -->
+                    <environmentVariables>
+                        <JAVA_TOOL_OPTIONS>-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8</JAVA_TOOL_OPTIONS>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+
             <!-- Maven Compiler Plugin - 全局配置 Lombok 和 MapStruct 注解处理器 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

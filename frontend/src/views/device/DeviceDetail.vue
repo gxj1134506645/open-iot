@@ -226,7 +226,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
-import * as echarts from 'echarts'
+import echarts from '@/utils/echarts'
 
 const route = useRoute()
 const router = useRouter()
