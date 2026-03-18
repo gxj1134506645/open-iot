@@ -394,6 +394,28 @@ JDK 21 (LTS，支持虚拟线程): Follow standard conventions
 
 <!-- MANUAL ADDITIONS START -->
 
+## Git 分支管理规范
+
+### 分支保护策略
+
+- **严禁删除功能分支**：所有以 `00x-` 开头的功能分支（如 `001-mvp-core`、`004-iot-platform-completion`、`005-frontend-ui-completion` 等）在合并到 main 后**永久保留**
+- **原因**：功能分支记录了完整的功能开发历史，便于追溯、回滚和代码审查
+- **例外**：仅允许删除临时性的修复分支（如 `fix/xxx`、`hotfix/xxx`）
+
+### 禁止操作
+
+- ❌ 使用 `git branch -d` 或 `git branch -D` 删除功能分支
+- ❌ 在合并后自动删除分支的 git 配置（如 `git config --global fetch.prune true`）
+- ❌ 使用 `git push origin --delete <branch>` 删除远程分支
+
+### 推荐操作
+
+- ✅ 合并后保留分支，使用 `git branch --merged` 查看已合并分支
+- ✅ 定期清理已合并的临时修复分支（非功能分支）
+- ✅ 使用标签（tag）标记重要版本发布点
+
+---
+
 ## 数据库架构设计
 
 ### 独立数据库架构
